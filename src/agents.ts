@@ -72,7 +72,6 @@ function loadAgentsFromDir(dir: string, source: AgentSource): AgentConfig[] {
       source,
       filePath,
       model: firstString(frontmatter.model),
-      tools: parseList(frontmatter.tools, path.dirname(filePath)),
       extensions: parseList(frontmatter.extensions, path.dirname(filePath), true),
       skills: parseList(frontmatter.skills, path.dirname(filePath), true),
       thinking: firstString(frontmatter.thinking),

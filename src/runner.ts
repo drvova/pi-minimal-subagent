@@ -72,7 +72,6 @@ function buildPiArgs(opts: {
   const model = agent.model ?? settings.model;
   if (model) args.push("--model", model);
   if (agent.thinking) args.push("--thinking", agent.thinking);
-  if (agent.tools?.length) args.push("--tools", agent.tools.join(","));
   if (agent.skills?.length) {
     for (const skill of agent.skills) args.push("--skill", skill);
   }

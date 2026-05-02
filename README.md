@@ -37,7 +37,6 @@ Agents are Markdown files with YAML frontmatter:
 ---
 name: scout
 description: Fast codebase reconnaissance
-tools: read, grep, find, ls, bash
 model: claude-haiku-4-5
 extensions: npm:some-pi-extension
 ---
@@ -51,7 +50,9 @@ Loaded from:
 
 Project agents override user agents with the same name.
 
-Supported optional frontmatter: `model`, `tools`, `extensions`, `skills`, and `thinking`.
+Supported optional frontmatter: `model`, `extensions`, `skills`, and `thinking`.
+
+Subagents use Pi's default enabled tools. This extension does not read `tools` frontmatter and does not pass `--tools` to child Pi processes. Extra tools should come from configured extensions.
 
 ## Settings
 
