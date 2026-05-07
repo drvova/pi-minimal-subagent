@@ -1,4 +1,4 @@
-import { getMarkdownTheme } from "@mariozechner/pi-coding-agent";
+import { getMarkdownTheme, keyHint } from "@mariozechner/pi-coding-agent";
 import { Container, Markdown, Spacer, Text } from "@mariozechner/pi-tui";
 import { getFinalAssistantText } from "./runner-events.js";
 import { type SubagentResult, isResultError, isResultSuccess } from "./types.ts";
@@ -279,7 +279,7 @@ export function renderSubagentResult(toolResult: any, { expanded }: { expanded: 
   const activities = storedActivities(result);
   const totalActivities = totalActivityCount(result, activities);
   if (!expanded && (totalActivities > COLLAPSED_ACTIVITY_COUNT || finalOutput || currentStatus !== "running")) {
-    text += `\n${fg("muted", "(Ctrl+O to expand)")}`;
+    text += `\n(${keyHint("app.tools.expand", "to expand")})`;
   }
 
   return new Text(text, 0, 0);
