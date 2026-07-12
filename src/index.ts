@@ -1,5 +1,4 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { Type } from "@sinclair/typebox";
 import { dispatchAction } from "./dispatch.ts";
 import { renderSubagentCall, renderSubagentResult } from "./rendering/render.ts";
 import { renderWorkflowWidget } from "./rendering/widgets.ts";
@@ -7,6 +6,13 @@ import { renderGoalWidget } from "./rendering/widgets-goal.ts";
 import { renderGSDWidget } from "./rendering/widgets-gsd.ts";
 import { renderCompletionNotification } from "./rendering/widgets-notify.ts";
 import { initLiveWidget } from "./rendering/live-widget.ts";
+
+// Tiny local Type helper — replaces @sinclair/typebox dependency
+function T_String(opts?: { description?: string }) { return { type: "string", ...opts } as any; }
+function T_Number(opts?: { description?: string }) { return { type: "number", ...opts } as any; }
+function T_Boolean(opts?: { description?: string }) { return { type: "boolean", ...opts } as any; }
+function T_Optional(t: any) { return { ...t, optional: true } as any; }
+const Type = { Object: (p: any) => p, String: T_String, Optional: T_Optional, Number: T_Number, Boolean: T_Boolean } as any;
 
 const Params = Type.Object({
   action: Type.String({ description: "gsd | run | run-workflow | run-goal | steer | workflows | workflow-create | workflow-update | workflow-delete | teams | team-create | team-update | team-delete | agents | agent-create | agent-update | agent-delete | runs | run-status | run-abort" }),
@@ -53,7 +59,7 @@ export default function (pi: ExtensionAPI) {
       return renderSubagentResult(toolResult, opts, theme);
     },
     async execute(_toolCallId, params, signal, onUpdate, ctx) {
-      return dispatchAction(params.action || "run", params as any, ctx.cwd, signal, onUpdate, pi);
+      return dispatchAction((params as any).action || "run", params as any, ctx.cwd, signal, onUpdate, pi);
     },
   });
 }
