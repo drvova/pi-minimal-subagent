@@ -1,0 +1,40 @@
+{
+  "id": "run-mri4mx68-c3miuu",
+  "workflowId": "wf-mri1czly-46z8ay",
+  "workflowName": "Probe Flow",
+  "status": "aborted",
+  "pid": 4104,
+  "phaseResults": [
+    {
+      "phaseId": "p1",
+      "phaseName": "Phase 1",
+      "status": "aborted",
+      "startedAt": "2026-07-12T18:28:32.241Z",
+      "taskResults": [
+        {
+          "taskId": "t1",
+          "agent": "scout",
+          "task": "check A",
+          "status": "aborted",
+          "startedAt": "2026-07-12T18:28:32.241Z",
+          "exitCode": 143,
+          "completedAt": "2026-07-12T18:29:27.333Z",
+          "errorMessage": "[freebuff] catalog: loaded 9 models from disk cache\n[freebuff] loaded 9 models from catalog\n[freebuff] connected — 9 models\nMCP server failed (chrome-devtools): MCP request initialize timed out\nMCP server failed (convex-mcp): MCP request initialize timed out\nMCP server failed (firecrawl-mcp): MCP request initialize timed out\nMCP server failed (jina-mcp-server): MCP request initialize timed out\nMCP server failed (zai-mcp-server): MCP request initialize timed out\nMCP server failed (zai-web-search-prime): MCP request initialize timed out\nMCP server failed (zeabur): MCP request initialize timed out"
+        },
+        {
+          "taskId": "t2",
+          "agent": "scout",
+          "task": "check B",
+          "status": "aborted",
+          "startedAt": "2026-07-12T18:28:32.260Z",
+          "exitCode": 143,
+          "completedAt": "2026-07-12T18:29:26.565Z",
+          "errorMessage": "[freebuff] catalog: loaded 9 models from disk cache\n[freebuff] loaded 9 models from catalog\n[freebuff] connected — 9 models\nMCP server failed (chrome-devtools): MCP request initialize timed out\nMCP server failed (convex-mcp): MCP request initialize timed out\nMCP server failed (firecrawl-mcp): MCP request initialize timed out\nMCP server failed (jina-mcp-server): MCP request initialize timed out\nMCP server failed (zai-mcp-server): MCP request initialize timed out\nMCP server failed (zai-web-search-prime): MCP request initialize timed out\nMCP server failed (zeabur): MCP request initialize timed out"
+        }
+      ],
+      "completedAt": "2026-07-12T18:29:27.334Z"
+    }
+  ],
+  "startedAt": "2026-07-12T18:28:32.240Z",
+  "completedAt": "2026-07-12T18:29:27.334Z"
+}

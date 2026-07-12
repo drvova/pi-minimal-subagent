@@ -1,0 +1,12 @@
+{"timestamp":"2026-07-12T18:42:07.463Z","type":"run_started","runId":"run-mri54e6y-hrimzl","message":"Workflow \"Code Review Pipeline\" started (2 phases)"}
+{"timestamp":"2026-07-12T18:42:07.464Z","type":"phase_started","runId":"run-mri54e6y-hrimzl","phaseId":"scan","message":"Phase \"Security Scan\" started with 2 tasks"}
+{"timestamp":"2026-07-12T18:42:07.464Z","type":"task_started","runId":"run-mri54e6y-hrimzl","phaseId":"scan","taskId":"sec1"}
+{"timestamp":"2026-07-12T18:42:07.534Z","type":"task_started","runId":"run-mri54e6y-hrimzl","phaseId":"scan","taskId":"sec2"}
+{"timestamp":"2026-07-12T18:43:46.457Z","type":"task_completed","runId":"run-mri54e6y-hrimzl","phaseId":"scan","taskId":"sec2","message":"## Secret Exposure Scan Complete ✅\n\n**Status: CLEAN — No exposed secrets detected**\n\n### Scan Results\n\n| Category | Status |\n|----------|--------|\n| Hardcoded API keys/tokens | ✅ None found |\n| Privat"}
+{"timestamp":"2026-07-12T18:44:04.720Z","type":"task_completed","runId":"run-mri54e6y-hrimzl","phaseId":"scan","taskId":"sec1","message":"## **Security Audit Report**\n\n### 🔴 **Critical Findings**\n\n**Dependency Vulnerabilities** — `npm audit` reports **7 high-severity issues**:\n\n| Package | Severity | Issue | Impact |\n|---------|-------"}
+{"timestamp":"2026-07-12T18:44:04.721Z","type":"phase_completed","runId":"run-mri54e6y-hrimzl","phaseId":"scan","message":"Phase \"Security Scan\" completed"}
+{"timestamp":"2026-07-12T18:44:04.721Z","type":"phase_started","runId":"run-mri54e6y-hrimzl","phaseId":"review","message":"Phase \"Code Review\" started with 1 tasks"}
+{"timestamp":"2026-07-12T18:44:04.721Z","type":"task_started","runId":"run-mri54e6y-hrimzl","phaseId":"review","taskId":"rev1"}
+{"timestamp":"2026-07-12T18:47:04.882Z","type":"task_completed","runId":"run-mri54e6y-hrimzl","phaseId":"review","taskId":"rev1","message":"Perfect. Here's the **condensed lazy-mode verdict**:\n\n## 🎯 Ponytail Code Review: pi-minimal-subagent\n\n| Issue | File(s) | Problem | Fix | LOC Saved |\n|-------|---------|---------|-----|-----------|\n|"}
+{"timestamp":"2026-07-12T18:47:04.882Z","type":"phase_completed","runId":"run-mri54e6y-hrimzl","phaseId":"review","message":"Phase \"Code Review\" completed"}
+{"timestamp":"2026-07-12T18:47:04.883Z","type":"run_completed","runId":"run-mri54e6y-hrimzl","message":"Workflow \"Code Review Pipeline\" completed successfully"}

@@ -1,0 +1,77 @@
+{
+  "id": "run-mri4klqd-04njps",
+  "workflowId": "wf-mrh43p51-dlz3k4",
+  "workflowName": "Code Review Pipeline",
+  "status": "completed",
+  "pid": 8167,
+  "phaseResults": [
+    {
+      "phaseId": "scan",
+      "phaseName": "Security Scan",
+      "status": "completed",
+      "startedAt": "2026-07-12T18:26:44.102Z",
+      "taskResults": [
+        {
+          "taskId": "sec1",
+          "agent": "scout",
+          "task": "Scan for security vulnerabilities",
+          "status": "completed",
+          "startedAt": "2026-07-12T18:26:44.103Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T18:28:02.768Z",
+          "response": "## **SECURITY VULNERABILITY SCAN REPORT**\n\n### 📊 **Overall Status**\n```\n🔴 HIGH RISK: 5 HIGH + 1 MODERATE npm vulnerabilities\n🟠 MEDIUM RISK: 1 Path Traversal vulnerability in src/agents/manager.ts\n🟡 LOW RISK: Weak RNG for non-security IDs\n✅ Clean application code (no eval, XSS, SQL injection)\n```\n\n---\n\n### 🔴 **CRITICAL: NPM Dependency Vulnerabilities (6 total)**\n\n| Severity | Package | Issue | CVSS | Action |\n|----------|---------|-------|------|--------|\n| **HIGH** | `undici` | TLS bypass, HTTP header injection, queue poisoning, DoS | 7.8 | Update immediately |\n| **HIGH** | `ws` | Uninitialized memory disclosure + memory DoS | 7.5 | Update immediately |\n| **HIGH** | `protobufjs` | Denial of Service via unbounded recursion | 7.5 | Update immediately |\n| **HIGH** | `fast-xml-builder` | Attribute bypass + comment regex bypass | — | Update immediately |\n| **HIGH** | `@mariozechner/pi-coding-agent` | Local privilege escalation via temp paths | 7.3 | Update immediately |\n| **MODERATE** | `brace-expansion` | DoS via large numeric ranges | 5.3 | Update soon |\n\n**Immediate fix:**\n```bash\nnpm audit fix --force\nnpm audit --json  # Verify remaining\n```\n\n---\n\n### 🟠 **Path Traversal Vulnerability**\n\n**Location:** `src/agents/manager.ts:36, 53, 84`\n\n**Vulnerable Code:**\n```typescript\nconst filePath = path.join(projectAgentsDir(cwd), `${input.name.trim()}.md`);\n```\n\n**Attack:** Agent name `../../etc/passwd` or `../../../secrets.json` → writes outside `.pi/agents/`\n\n**Risk Level:** HIGH (user-controlled input directly in file path)\n\n**Fix (3 lines):**\n```typescript\n// Sanitize agent name: allow only alphanumeric, dash, underscore\nconst sanitized = input.name\n  .trim()\n  .replace(/[^a-zA-Z0-9_-]/g, '_')\n  .slice(0, 255); // Prevent buffer overflow attempts\n\nconst filePath = path.join(projectAgentsDir(cwd), `${sanitized}.md`);\n```\n\nApply to all 3 locations (create, update, remove).\n\n---\n\n### 🟡 **Weak Cryptographic RNG for IDs**\n\n**Locations:** 5 files\n- `src/workflows/manager.ts:16`\n- `src/engine/gsd-runner.ts:42`\n- `src/engine/workflow-runner.ts:25`\n- `src/engine/background.ts:19`\n- `src/engine/goal-runner.ts:19`\n\n**Code Pattern:**\n```typescript\nconst id = `run-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;\n```\n\n**Risk:** `Math.random()` is **NOT cryptographically secure**. IDs are predictable if attacker knows timestamp.\n\n**Current Impact:** LOW (IDs are just run identifiers, not auth tokens)\n\n**Future-proofing** (if auth/secrets use these later):\n```typescript\nimport { randomBytes } from \"node:crypto\";\nconst id = `run-${Date.now().toString(36)}-${randomBytes(4).toString('hex')}`;\n```\n\n---\n\n### ✅ **Clean Application Code**\n\n- ✅ **No eval/Function constructor** usage\n- ✅ **No dynamic require/import** of user input\n- ✅ **No innerHTML/dangerouslySetInnerHTML** (backend only)\n- ✅ **No hardcoded secrets** in source\n- ✅ **No SQL injection patterns** (no SQL in project)\n- ✅ **No insecure crypto** (md5, sha1, DES, RC4)\n- ✅ **Input validation present** for agent creation\n\n---\n\n### 🛠️ **Remediation Checklist**\n\n**Immediate (this hour):**\n- [ ] Run `npm audit fix --force`\n- [ ] Run `npm audit` to verify fix\n- [ ] Apply path traversal fix to `src/agents/manager.ts` (3 locations)\n- [ ] Test agent creation with malicious names: `../../test`, `../../../`, `a/b/c`\n\n**Soon (before deployment):**\n- [ ] Consider using `crypto.getRandomValues()` for IDs if ever used in auth\n- [ ] Add input validation tests for agent names\n- [ ] Run `npm audit` in CI/CD on every commit\n\n**Optional (future):**\n- [ ] Add ESLint rules to catch `eval` patterns\n- [ ] Add input sanitization utility to prevent similar issues elsewhere\n\n---\n\n### 📋 **Verification Commands**\n\n```bash\n# Check npm vulnerabilities\nnpm audit\n\n# Test path traversal fix\necho 'Agent name: ../../etc/passwd' | npm test\n\n# Find all Math.random() uses  \ngrep -rn \"Math.random\" src/\n\n# Find all file path constructions\ngrep -rn \"path.join.*input\\|readFile\\|writeFile\" src/\n```\n\n**Priority:** Fix path traversal + npm vulnerabilities before production.",
+          "usage": {
+            "input": 13,
+            "output": 1370,
+            "cost": 0.015522450000000002,
+            "turns": 1
+          }
+        },
+        {
+          "taskId": "sec2",
+          "agent": "scout",
+          "task": "Check for exposed secrets",
+          "status": "completed",
+          "startedAt": "2026-07-12T18:26:44.111Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T18:27:42.069Z",
+          "response": "## Secret Exposure Summary\n\n✅ **Good news:** No exposed secrets found in source code or .env files.\n\n**Clean indicators:**\n- No `.env` files present\n- No hardcoded API keys, passwords, or tokens\n- No private keys (`.pem`, `.key` files)\n\n---\n\n## ⚠️ Security Vulnerabilities Found (from prior scans)\n\n**6 HIGH-severity npm vulnerabilities** in transitive dependencies:\n\n| Package | Issue | CVSS |\n|---------|-------|------|\n| `undici` | HTTP header injection, response queue poisoning, SOCKS5 bypass | 7.3–8.2 |\n| `ws` | Uninitialized memory disclosure + DoS | 2.2–7.3 |\n| `protobufjs` | Unbounded JSON recursion DoS | — |\n| `fast-xml-builder` | Attribute bypass, comment regex bypass | — |\n\n**Immediate fix:**\n```bash\nnpm audit fix\nnpm audit  # verify\n```\n\n---\n\n## Other Risks (from prior scans)\n\n1. **Path traversal in `src/agents/manager.ts`** — agent name not sanitized for `../` sequences\n   - Fix: sanitize name before path.join()\n\n2. **Weak RNG for run IDs** — uses `Math.random()` instead of `crypto.getRandomValues()`\n   - Low impact now (IDs are not auth tokens), upgrade if needed later\n\n→ **Run `npm audit fix` immediately.** No secrets exposed, but dependencies need patching.",
+          "usage": {
+            "input": 13,
+            "output": 493,
+            "cost": 0.013829600000000001,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-12T18:28:02.773Z"
+    },
+    {
+      "phaseId": "review",
+      "phaseName": "Code Review",
+      "status": "completed",
+      "startedAt": "2026-07-12T18:28:02.773Z",
+      "taskResults": [
+        {
+          "taskId": "rev1",
+          "agent": "scout",
+          "task": "Review code quality and patterns",
+          "status": "completed",
+          "startedAt": "2026-07-12T18:28:02.773Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T18:30:38.497Z",
+          "response": "## Review Complete ✓\n\n**Comprehensive code quality report written to `CODE_QUALITY_REVIEW.md`.**\n\n### Quick Summary\n\n| Metric | Result |\n|--------|--------|\n| **Overall Grade** | A- |\n| **Tests** | 222/222 ✓ |\n| **LOC** | 5933 (well-organized) |\n| **Type Coverage** | ~85% (external API boundaries use `any`) |\n| **Architecture** | Strong (clean layers, single responsibility) |\n\n### Top Findings\n\n1. **CRUD boilerplate** — 9 handlers, ~70% duplicated. Could consolidate to **~40 LOC savings**.\n2. **Type boundaries** — 27 `any` in dispatch-exec.ts, 16 in db.ts. Intentional (external APIs), but narrowable.\n3. **No silent failures** — Error handling is noisy and explicit ✓\n4. **Minimal deps** — Only @mariozechner peers, inline type helpers instead of typebox ✓\n\n### Actionable Next Steps (Ranked by ROI)\n\n1. **Consolidate CRUD handlers** [HIGH VALUE] → Generic handler factory\n2. **Type-narrow API boundaries** [MEDIUM VALUE] → SessionManager, DB row interfaces  \n3. **Review delegation threshold** [LOW VALUE] → Quick policy calibration\n\n**Recommendation:** Ship as-is. Consolidation targets are low-risk and can be tackled next sprint without blocking.",
+          "usage": {
+            "input": 13,
+            "output": 370,
+            "cost": 0.010470050000000002,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-12T18:30:38.516Z"
+    }
+  ],
+  "startedAt": "2026-07-12T18:26:44.101Z",
+  "completedAt": "2026-07-12T18:30:38.516Z"
+}

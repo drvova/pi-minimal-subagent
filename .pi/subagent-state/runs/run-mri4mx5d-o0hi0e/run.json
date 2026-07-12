@@ -1,0 +1,29 @@
+{
+  "id": "run-mri4mx5d-o0hi0e",
+  "workflowId": "wf-mri4klqx-mzsu13",
+  "workflowName": "Chaos Target",
+  "status": "aborted",
+  "pid": 4104,
+  "phaseResults": [
+    {
+      "phaseId": "p1",
+      "phaseName": "P1",
+      "status": "aborted",
+      "startedAt": "2026-07-12T18:28:32.210Z",
+      "taskResults": [
+        {
+          "taskId": "t1",
+          "agent": "scout",
+          "task": "Reply exactly CHAOS-OK",
+          "status": "aborted",
+          "startedAt": "2026-07-12T18:28:32.210Z",
+          "exitCode": 1,
+          "completedAt": "2026-07-12T18:28:38.710Z"
+        }
+      ],
+      "completedAt": "2026-07-12T18:28:38.711Z"
+    }
+  ],
+  "startedAt": "2026-07-12T18:28:32.209Z",
+  "completedAt": "2026-07-12T18:28:38.711Z"
+}

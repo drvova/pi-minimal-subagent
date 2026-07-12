@@ -1,0 +1,68 @@
+{
+  "id": "run-mri54ebz-yj17co",
+  "workflowId": "wf-mri53tgo-sofc95",
+  "workflowName": "Stress Chain",
+  "status": "aborted",
+  "pid": 28599,
+  "phaseResults": [
+    {
+      "phaseId": "p1",
+      "phaseName": "Recon",
+      "status": "aborted",
+      "startedAt": "2026-07-12T18:42:07.632Z",
+      "taskResults": [
+        {
+          "taskId": "t1",
+          "agent": "scout",
+          "task": "Reply exactly CHAIN-1A",
+          "status": "aborted",
+          "startedAt": "2026-07-12T18:42:07.633Z",
+          "exitCode": 143,
+          "completedAt": "2026-07-12T18:43:05.119Z",
+          "errorMessage": "[freebuff] catalog: loaded 9 models from disk cache\n[freebuff] loaded 9 models from catalog\n[freebuff] connected — 9 models\nMCP server failed (chrome-devtools): MCP request initialize timed out\nMCP server failed (convex-mcp): MCP request initialize timed out\nMCP server failed (firecrawl-mcp): MCP request initialize timed out\nMCP server failed (jina-mcp-server): MCP request initialize timed out\nMCP server failed (zai-mcp-server): MCP request initialize timed out\nMCP server failed (zai-web-search-prime): MCP request initialize timed out\nMCP server failed (zeabur): MCP request initialize timed out"
+        },
+        {
+          "taskId": "t2",
+          "agent": "scout",
+          "task": "Reply exactly CHAIN-1B",
+          "status": "aborted",
+          "startedAt": "2026-07-12T18:42:07.647Z",
+          "exitCode": 143,
+          "completedAt": "2026-07-12T18:43:15.656Z",
+          "errorMessage": "[freebuff] catalog: loaded 9 models from disk cache\n[freebuff] loaded 9 models from catalog\n[freebuff] connected — 9 models\nMCP server failed (chrome-devtools): MCP request initialize timed out\nMCP server failed (convex-mcp): MCP request initialize timed out\nMCP server failed (firecrawl-mcp): MCP request initialize timed out\nMCP server failed (jina-mcp-server): MCP request initialize timed out\nMCP server failed (zai-mcp-server): MCP request initialize timed out\nMCP server failed (zai-web-search-prime): MCP request initialize timed out\nMCP server failed (zeabur): MCP request initialize timed out"
+        }
+      ],
+      "completedAt": "2026-07-12T18:43:15.657Z"
+    },
+    {
+      "phaseId": "p2",
+      "phaseName": "Middle",
+      "status": "pending",
+      "startedAt": "2026-07-12T18:42:07.631Z",
+      "taskResults": [
+        {
+          "taskId": "t3",
+          "agent": "auto",
+          "task": "Reconnaissance: reply exactly CHAIN-2",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phaseId": "p3",
+      "phaseName": "Final",
+      "status": "pending",
+      "startedAt": "2026-07-12T18:42:07.631Z",
+      "taskResults": [
+        {
+          "taskId": "t4",
+          "agent": "scout",
+          "task": "Reply exactly CHAIN-3",
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+  "startedAt": "2026-07-12T18:42:07.631Z",
+  "completedAt": "2026-07-12T18:43:15.657Z"
+}

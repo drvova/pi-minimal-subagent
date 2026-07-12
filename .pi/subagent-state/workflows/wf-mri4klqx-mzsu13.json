@@ -1,0 +1,20 @@
+{
+  "id": "wf-mri4klqx-mzsu13",
+  "name": "Chaos Target",
+  "description": "created under parallel load",
+  "phases": [
+    {
+      "id": "p1",
+      "name": "P1",
+      "tasks": [
+        {
+          "id": "t1",
+          "agent": "scout",
+          "task": "Reply exactly CHAOS-OK"
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-07-12T18:26:44.121Z",
+  "updatedAt": "2026-07-12T18:26:44.121Z"
+}

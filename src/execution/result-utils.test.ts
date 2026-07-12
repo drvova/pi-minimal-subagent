@@ -74,3 +74,79 @@ test("normalizeCompletedResult: error without completion stays error", () => {
   assert.equal(r.exitCode, 1);
   assert.equal(r.stopReason, "error");
 });
+
+test("normalizeCompletedResult: tool failure without semantic completion", () => {
+  const r = normalizeCompletedResult(base({
+    exitCode: 1, sawAgentEnd: true, stopReason: "error", messages: [],
+    toolExecutions: [{ toolCallId: "1", toolName: "test-tool", status: "error", latestText: "tool failed", isError: true, updates: 1 }],
+  }), false);
+  assert.ok(r.errorMessage?.includes("tool error"));
+  assert.ok(r.errorMessage?.includes("tool failed"));
+});
+
+test("normalizeCompletedResult: tool failure in activities array", () => {
+  const r = normalizeCompletedResult(base({
+    exitCode: 1, sawAgentEnd: true, stopReason: "error", messages: [],
+    activities: [{ type: "tool", status: "error", displayText: "failed-tool", isError: true, activityOrder: 0, toolCallId: "1", toolName: "test-tool", updates: 1 }],
+  }), false);
+  assert.ok(r.errorMessage?.includes("tool error"));
+  assert.ok(r.errorMessage?.includes("failed-tool"));
+});
+
+test("normalizeCompletedResult: transport error merged with tool failure", () => {
+  const r = normalizeCompletedResult(base({
+    exitCode: 1, sawAgentEnd: true, stopReason: "error", messages: [],
+    errorMessage: "Connection timeout", stderr: "Something else",
+    toolExecutions: [{ toolCallId: "1", toolName: "test-tool", status: "error", isError: true, updates: 1 }],
+  }), false);
+  assert.ok(r.stderr.includes("Transport error: Connection timeout"));
+});
+
+test("normalizeCompletedResult: artifact paths in error message", () => {
+  const r = normalizeCompletedResult(base({
+    exitCode: 1, sawAgentEnd: true, stopReason: "error", messages: [],
+    stdoutArtifact: "/tmp/stdout.txt", stderrArtifact: "/tmp/stderr.txt",
+    toolExecutions: [{ toolCallId: "1", toolName: "test-tool", status: "error", isError: true, updates: 1 }],
+  }), false);
+  assert.ok(r.errorMessage?.includes("Artifacts:"));
+  assert.ok(r.errorMessage?.includes("/tmp/stdout.txt"));
+});
+
+test("normalizeCompletedResult: no tool failure, no error message modification", () => {
+  const r = normalizeCompletedResult(base({
+    exitCode: 1, sawAgentEnd: true, stopReason: "error", messages: [],
+    toolExecutions: [{ toolCallId: "1", toolName: "test-tool", status: "completed", updates: 1 }],
+  }), false);
+  assert.equal(r.errorMessage, "");
+});
+
+test("normalizeCompletedResult: stop_reason=error propagates when exit > 0", () => {
+  const r = normalizeCompletedResult(base({ exitCode: 2, stderr: "bad" }), false);
+  assert.equal(r.stopReason, "error");
+  assert.equal(r.errorMessage, "bad");
+});
+
+test("isResultError: true when exitCode > 0 without semantic completion", () => {
+  const r = base({ exitCode: 1, messages: [] });
+  assert.equal(isResultError(r), true);
+});
+
+test("isResultError: false for running state", () => {
+  const r = base({ exitCode: -1 });
+  assert.equal(isResultError(r), false);
+});
+
+test("isResultSuccess: true with semantic completion even if exitCode was non-zero before normalization", () => {
+  const r = base({ exitCode: 0, sawAgentEnd: true, messages: [msg("done")] });
+  assert.equal(isResultSuccess(r), true);
+});
+
+test("isResultSuccess: false when stopReason is error", () => {
+  const r = base({ exitCode: 0, stopReason: "error" });
+  assert.equal(isResultSuccess(r), false);
+});
+
+test("isResultSuccess: false when stopReason is aborted", () => {
+  const r = base({ exitCode: 0, stopReason: "aborted" });
+  assert.equal(isResultSuccess(r), false);
+});

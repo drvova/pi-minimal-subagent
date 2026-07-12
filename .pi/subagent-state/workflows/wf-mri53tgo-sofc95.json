@@ -1,0 +1,48 @@
+{
+  "id": "wf-mri53tgo-sofc95",
+  "name": "Stress Chain",
+  "description": "3-phase sequential chain for stress",
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Recon",
+      "concurrency": 2,
+      "tasks": [
+        {
+          "id": "t1",
+          "agent": "scout",
+          "task": "Reply exactly CHAIN-1A"
+        },
+        {
+          "id": "t2",
+          "agent": "scout",
+          "task": "Reply exactly CHAIN-1B"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Middle",
+      "tasks": [
+        {
+          "id": "t3",
+          "agent": "auto",
+          "task": "Reconnaissance: reply exactly CHAIN-2"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Final",
+      "tasks": [
+        {
+          "id": "t4",
+          "agent": "scout",
+          "task": "Reply exactly CHAIN-3"
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-07-12T18:41:40.584Z",
+  "updatedAt": "2026-07-12T18:41:40.584Z"
+}

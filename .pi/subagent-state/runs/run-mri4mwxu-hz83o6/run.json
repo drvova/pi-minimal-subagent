@@ -1,0 +1,116 @@
+{
+  "id": "run-mri4mwxu-hz83o6",
+  "workflowId": "wf-mrha0q4y-yxosu9",
+  "workflowName": "GSD Cycle",
+  "status": "failed",
+  "pid": 4104,
+  "phaseResults": [
+    {
+      "phaseId": "discuss",
+      "phaseName": "Discuss",
+      "status": "completed",
+      "startedAt": "2026-07-12T18:28:31.939Z",
+      "taskResults": [
+        {
+          "taskId": "d1",
+          "agent": "gsd-planner",
+          "task": "Analyze the feature request. Identify what needs to be built, surface constraints and tradeoffs. Output: problem statement, key decisions, constraints.",
+          "status": "completed",
+          "startedAt": "2026-07-12T18:28:31.940Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T18:30:28.526Z",
+          "response": "## Feature Analysis: Subagent Environment Configuration\n\nBased on the planning documents in `.planning/subagent-env-injection/`:\n\n---\n\n### Problem Statement\n\nPi users configuring specialized subagents cannot intentionally differ env-derived extension configuration from the parent agent. Subagent processes inherit the parent's `process.env` wholesale, creating a configuration gap: when a delegated subagent needs different extension runtime context (API endpoints, feature flags, log levels), users have no escape hatch. Without a generic mechanism, this minimal extension risks accumulating per-extension config workarounds while users resort to awkward global environment changes.\n\n**Affected user:** Pi user configuring specialized subagents that need extension settings different from the main agent.\n\n**Failure mode:** Subagent runs but uses wrong extension context for the delegated task.\n\n**Why now:** Near-term subagent adoption + maintainability risk outweigh the cost of a generic solution.\n\n---\n\n### What Needs to Be Built\n\nFour surfaces, minimal scope:\n\n| Surface | Change | File |\n|---------|--------|------|\n| **Settings type** | Add `environment: Record<string, string> \\| null` to `Settings` | `src/types.ts` |\n| **Settings parser** | Parse `environment` as JSON object, filter non-string values, merge global/project by key | `src/settings.ts` |\n| **Process spawn** | Merge `settings.environment` over `process.env` at child spawn boundary | `src/runner.ts` |\n| **Documentation** | Document `environment` shape, precedence, merge behavior, string-only constraint | `README.md` |\n\n**Not built:**\n- Per-agent frontmatter environment\n- Per-invocation tool parameter\n- Isolated/replaced environment mode\n- Secret masking or auditing\n- Unset/delete semantics\n\n---\n\n### Key Decisions\n\n| Decision | Choice | Rationale |\n|----------|--------|-----------|\n| **Scope** | Global + project only | User confirmed; per-agent/per-call explicitly excluded |\n| **Setting name** | `environment` | User preferred over `env` |\n| **Value shape** | JSON object: `{ \"VAR\": \"value\" }` | Keys = env var names, values = strings only |\n| **Inherited env** | Merge/override | Preserve current behavior; add/override named vars only |\n| **Global/project** | Key-level merge, project wins | Follows Pi settings convention for nested objects |\n| **Non-string values** | Ignore | Forgiving parser style; no stringify or fail |\n| **Empty string** | Allow | Can be intentional |\n| **Empty key** | Ignore | Invalid env var name |\n| **Tool contract** | No change | Remains `{ agent, task }` |\n| **Safety** | Minimal explicit control | No secret masking, no audit logs, no value display |\n\n---\n\n### Constraints\n\n**Technical invariants:**\n- Existing `process.env` inheritance behavior preserved when `environment` omitted\n- Configured values apply to all subagents in the resolved scope (no per-run filtering)\n- Tool input schema unchanged\n- Agent frontmatter unchanged\n- Values must not appear in tool result details, rendering, progress output, CLI args\n\n**Architectural boundaries:**\n- Reuse existing `src/settings.ts` resolution path\n- Reuse existing `src/runner.ts` spawn boundary\n- No new tool parameter, agent field, or extension-specific config framework\n\n**Appetite:**\n- Settings parsing + type + runner merge + docs only\n- No test harness unless trivial\n- No secrets manager, allowlist, or isolated env mode\n\n---\n\n### Tradeoffs\n\n| Choice | Pro | Con |\n|--------|-----|-----|\n| **Global/project-only** | Simple, reuses settings path, fits minimal scope | All subagents in scope get same values; can't differ per-agent without workaround |\n| **Merge over inherited** | Safe default, preserves current behavior | Can't delete inherited vars; can't isolate subagent from parent secrets |\n| **Minimal safety** | Easy to use, no audit/masking UI | Values not protected if accidentally logged by extensions |\n| **String-only** | Clear contract, no type guessing | Can't pass structured config (must serialize externally) |\n| **Key-level project override** | Consistent with Pi settings, predictable | Can't wholesale replace global env; partial overrides only |\n| **No unset/delete** | Simpler first version | Can't intentionally remove inherited var (e.g., unset `NODE_ENV`) |\n\n---\n\n**Worth solving:** Yes — user-controlled per-subagent config gap causes adoption friction and support risk. Generic env injection solves it without extension-specific plumbing.\n\n**Next phase:** `/plan` (spec complete, no spike needed).",
+          "usage": {
+            "input": 14,
+            "output": 1695,
+            "cost": 0.07536255,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-12T18:30:28.533Z"
+    },
+    {
+      "phaseId": "plan",
+      "phaseName": "Plan",
+      "status": "completed",
+      "startedAt": "2026-07-12T18:30:28.533Z",
+      "taskResults": [
+        {
+          "taskId": "p1",
+          "agent": "gsd-planner",
+          "task": "Decompose the work into parallel-executable tasks. Each task must fit in a clean context window. Output: numbered task list with estimates, verification checklist.",
+          "status": "completed",
+          "startedAt": "2026-07-12T18:30:28.533Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T18:33:11.722Z",
+          "response": "Based on the codebase analysis, here's the parallel task decomposition:\n\n## Problem Statement\n\npi-minimal-subagent is a TypeScript-based orchestration system for Pi agents with autonomous delegation, workflow execution, durable state, and rich TUI widgets. The codebase is functionally complete with clean tests and no TypeScript errors. Work focuses on enhancement, optimization, and documentation rather than bug fixes.\n\n## Key Decisions\n\n- **Parallel execution strategy**: 8 independent task domains based on module boundaries\n- **Clean context windows**: Each task scoped to one subsystem (max 15-20 files)\n- **Lazy dependencies**: Update peer deps only if features require it; TypeScript 7.x is breaking, stay on 5.9.x\n- **No speculative work**: Each task ships working code, no scaffolding for \"later\"\n- **Verification first**: Every task includes runnable checks before marking complete\n\n---\n\n## Task Decomposition\n\n### 1. **Engine Optimization & Documentation** ⚡\n**Scope**: `src/engine/` (goal-runner, workflow-runner, phase-runner, gsd-runner, steering, spawn, background)\n**Effort**: 2-3 hours  \n**Agent**: `engineer`\n\n**Work**:\n- Review `goal-runner.ts` for edge case handling (budget exceeded mid-turn, judge verdict parsing)\n- Optimize `workflow-runner.ts` parallel phase execution \n- Add inline docs for steering protocol and spawn lifecycle\n- Verify `gsd-runner.ts` three-phase loop (Discuss → Plan → Execute)\n- Test background run abort handling\n\n**Verification**:\n```bash\nnpm test -- src/engine/*.test.ts\nnpx tsc --noEmit src/engine/*.ts\ngrep -c \"^ *//\" src/engine/*.ts  # Should be >50 lines of docs\n```\n\n**Deliverable**: Engine logic with <2% performance regression, inline docs, all tests green.\n\n---\n\n### 2. **Delegation Policy Enhancement** 🎯\n**Scope**: `src/delegation/` (complexity.ts, policy.ts)  \n**Effort**: 1-2 hours  \n**Agent**: `engineer`\n\n**Work**:\n- Review `complexity.ts` scoring algorithm for edge cases (empty input, ultra-long tasks)\n- Add test cases for `agentRouting` keyword matching (multi-keyword, regex patterns)\n- Document `autoDelegate` threshold tuning guidance\n- Simplify `shouldDelegate()` conditional logic (currently 3-level ternary)\n\n**Verification**:\n```bash\nnpm test -- src/delegation/*.test.ts\n# New test cases: empty task, 10k char task, multi-keyword match\n```\n\n**Deliverable**: Delegation policy with expanded test coverage, simpler boolean logic, tuning docs.\n\n---\n\n### 3. **Execution Layer Cleanup** 🔧\n**Scope**: `src/execution/` (runner.ts, activity-tracker, message-tracker, thinking-tracker, progress, result-utils)  \n**Effort**: 2 hours  \n**Agent**: `engineer`\n\n**Work**:\n- Consolidate `*.d.ts` + `*.js` duplicates into pure TypeScript (5 files: activity-tracker, message-tracker, thinking-tracker, progress, runner-events)\n- Remove `format-utils.test.js` (already tested in TS), convert to `.test.ts` if logic exists\n- Inline `result-utils.ts` helpers into `runner.ts` if <3 call sites\n- Strip console.log debug statements from `runner.ts`\n\n**Verification**:\n```bash\nfind src/execution -name '*.js' -o -name '*.d.ts'  # Should return 0 results\nnpm test -- src/execution/*.test.ts\n```\n\n**Deliverable**: Pure TypeScript execution layer, no `.js`/`.d.ts` files, -50 LOC minimum.\n\n---\n\n### 4. **Rendering & Widget Polish** 🎨\n**Scope**: `src/rendering/` (live-widget, render, widgets-*)  \n**Effort**: 2-3 hours  \n**Agent**: `engineer` + `reviewer`\n\n**Work**:\n- Review `live-widget.ts` state machine for race conditions on rapid state changes\n- Optimize `render-activities.ts` for large activity lists (>100 items)\n- Test `widgets-notify.ts` notification display on timeout edge case\n- Add spinner animation frame rate config to `widgets-shared.ts`\n- Document widget lifecycle (mount → update → unmount)\n\n**Verification**:\n```bash\nnpm test -- src/rendering/*.test.ts\n# Manual test: spawn 50 concurrent activities, verify no UI flicker\n```\n\n**Deliverable**: Widget system with documented lifecycle, no render stutter, config exposure.\n\n---\n\n### 5. **State & Persistence Hardening** 💾\n**Scope**: `src/state/db.ts`, `src/runs/persistence.ts`, `src/teams/persistence.ts`, `src/workflows/persistence.ts`  \n**Effort**: 2 hours  \n**Agent**: `engineer`\n\n**Work**:\n- Add write-ahead logging hint to `db.ts` for concurrent access safety\n- Test run persistence under rapid create/update cycles (stress test)\n- Validate JSON schema on workflow/team load (catch corrupt state files)\n- Document `.pi/subagent-state/` directory layout in README\n\n**Verification**:\n```bash\nnpm test -- src/state/*.test.ts src/runs/*.test.ts src/teams/*.test.ts src/workflows/*.test.ts\n# Stress test: create 100 runs in <1s, verify all persisted\n```\n\n**Deliverable**: Hardened persistence layer, schema validation, stress test green.\n\n---\n\n### 6. **API Layer Simplification** 📡\n**Scope**: `src/dispatch*.ts` (dispatch, dispatch-crud, dispatch-exec, dispatch-runs)  \n**Effort**: 1-2 hours  \n**Agent**: `engineer`\n\n**Work**:\n- Merge `dispatch-crud.ts` into `dispatch.ts` if exports are <5 functions\n- Inline single-use helper functions from `dispatch-exec.ts` and `dispatch-runs.ts`\n- Add input validation to all public dispatch functions (null checks, type guards)\n- Document dispatch protocol in module header\n\n**Verification**:\n```bash\nnpm test -- src/dispatch*.test.ts\nnpx tsc --noEmit src/dispatch*.ts\nwc -l src/dispatch*.ts  # Target: <500 total LOC\n```\n\n**Deliverable**: Consolidated dispatch layer, all inputs validated, <500 LOC total.\n\n---\n\n### 7. **Test Coverage & Documentation** 📚\n**Scope**: All test files, README.md, docs/  \n**Effort**: 2 hours  \n**Agent**: `reviewer` + `scout`\n\n**Work**:\n- Run coverage report, identify untested branches (target: >80% coverage)\n- Add missing test cases for `settings-parsers.ts` (currently no `.test.ts`)\n- Expand README.md with architecture diagram and quick-start examples\n- Create `docs/architecture.md` documenting subsystem relationships\n- Verify all exported functions have TSDoc comments\n\n**Verification**:\n```bash\nnpx c8 npm test  # Coverage report\ngrep -r \"^ */\\*\\*\" src/**/*.ts | wc -l  # TSDoc count >100\n```\n\n**Deliverable**: >80% test coverage, architecture docs, TSDoc on all exports.\n\n---\n\n### 8. **Dependency Update & Build Config** 📦\n**Scope**: `package.json`, peer deps, build scripts  \n**Effort**: 1 hour  \n**Agent**: `engineer`\n\n**Work**:\n- Update `@mariozechner/pi-*` peer deps from 0.72.0 → 0.73.1\n- Keep TypeScript at 5.9.x (7.x is breaking, needs separate migration plan)\n- Test `bun:compile` build with updated deps\n- Add `npm run build` script as alias to bun:compile\n- Document peer dependency versioning strategy in README\n\n**Verification**:\n```bash\nnpm outdated  # Should show only typescript 7.x\nnpm test\nnpm run build && ./dist/pi-minimal-subagent --version\n```\n\n**Deliverable**: Updated peer deps, working build, version strategy documented.\n\n---\n\n## Verification Checklist\n\n**Pre-execution**:\n- [ ] All parallel tasks have independent file scopes (no overlapping edits)\n- [ ] Each task agent is defined in `.pi/agents/`\n- [ ] Baseline tests pass: `npm test && npm run typecheck`\n\n**Per-task completion**:\n- [ ] Task-specific verification commands pass\n- [ ] No new TypeScript errors introduced\n- [ ] Git diff shows net-zero or negative LOC change (lazy code wins)\n- [ ] No TODOs, FIXMEs, or placeholder comments left behind\n- [ ] Changes covered by tests (new logic = new test)\n\n**Post-execution**:\n- [ ] Full test suite passes: `npm test`\n- [ ] TypeScript clean: `npm run typecheck`\n- [ ] Build succeeds: `npm run build`\n- [ ] Documentation updated for changed APIs\n- [ ] Git history shows 8 clean commits (one per task)\n\n---\n\n**Estimates**: 13-17 hours total work, 2-3 hours wall time if fully parallelized across 8 agents.",
+          "usage": {
+            "input": 13,
+            "output": 2624,
+            "cost": 0.0699978,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-12T18:33:11.732Z"
+    },
+    {
+      "phaseId": "execute",
+      "phaseName": "Execute",
+      "status": "pending",
+      "startedAt": "2026-07-12T18:28:31.938Z",
+      "taskResults": [
+        {
+          "taskId": "e1",
+          "agent": "gsd-executor",
+          "task": "Implement the highest-priority tasks from the plan. Write complete tested code with no TODOs.",
+          "status": "pending"
+        },
+        {
+          "taskId": "e2",
+          "agent": "gsd-executor",
+          "task": "Implement the remaining tasks. Ensure all integration points are connected.",
+          "status": "pending"
+        },
+        {
+          "taskId": "e3",
+          "agent": "gsd-executor",
+          "task": "Write tests for all new functionality. Verify edge cases are covered.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phaseId": "verify",
+      "phaseName": "Verify",
+      "status": "pending",
+      "startedAt": "2026-07-12T18:28:31.938Z",
+      "taskResults": [
+        {
+          "taskId": "v1",
+          "agent": "gsd-reviewer",
+          "task": "Walk through everything built. Run tests, check types, review output. Diagnose and fix issues. Report: pass/fail/fixed.",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phaseId": "ship",
+      "phaseName": "Ship",
+      "status": "pending",
+      "startedAt": "2026-07-12T18:28:31.938Z",
+      "taskResults": [
+        {
+          "taskId": "s1",
+          "agent": "gsd-reviewer",
+          "task": "Summarize what was accomplished. List files changed. Note deferred items. Prepare the commit message and push.",
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+  "startedAt": "2026-07-12T18:28:31.938Z",
+  "error": "orphaned: owner process exited before completion",
+  "completedAt": "2026-07-12T18:38:10.357Z"
+}

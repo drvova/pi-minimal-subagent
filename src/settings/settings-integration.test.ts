@@ -11,9 +11,9 @@ test("integration: parseEnvironment + mergeEnvironment simulate global+project m
   const merged = mergeEnvironment(globalEnv, projectEnv);
 
   // Project API_KEY wins, global DB_URL kept, project LOG_LEVEL added
-  assert.equal(merged.API_KEY, "project-key");
-  assert.equal(merged.DB_URL, "global-db");
-  assert.equal(merged.LOG_LEVEL, "debug");
+  assert.equal(merged!.API_KEY, "project-key");
+  assert.equal(merged!.DB_URL, "global-db");
+  assert.equal(merged!.LOG_LEVEL, "debug");
 });
 
 test("integration: parseEnvironment filters invalid values end-to-end", () => {

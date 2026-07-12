@@ -1,0 +1,52 @@
+{
+  "id": "run-mri54ecv-ek9epn",
+  "workflowId": "wf-mri1czly-46z8ay",
+  "workflowName": "Probe Flow",
+  "status": "completed",
+  "pid": 28599,
+  "phaseResults": [
+    {
+      "phaseId": "p1",
+      "phaseName": "Phase 1",
+      "status": "completed",
+      "startedAt": "2026-07-12T18:42:07.664Z",
+      "taskResults": [
+        {
+          "taskId": "t1",
+          "agent": "scout",
+          "task": "check A",
+          "status": "completed",
+          "startedAt": "2026-07-12T18:42:07.664Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T18:43:40.582Z",
+          "response": "I need clarity: **what is \"A\"?**\n\n- A test checkpoint?\n- A code review item?\n- A file named \"A\"?\n- A task from a plan?\n- Something in the last commit?\n\nPlease point me to it and I'll check it fast.",
+          "usage": {
+            "input": 13,
+            "output": 113,
+            "cost": 0.005913750000000001,
+            "turns": 1
+          }
+        },
+        {
+          "taskId": "t2",
+          "agent": "scout",
+          "task": "check B",
+          "status": "completed",
+          "startedAt": "2026-07-12T18:42:07.687Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T18:43:42.352Z",
+          "response": "Need clarification — \"check B\" is vague. Are you asking me to:\n\n1. **Check a checkpoint** (checkpoint_B.md or test_checkpoint_B.py)?\n2. **Check a branch** named \"B\"?\n3. **Check a section** labeled \"B\" in a file?\n4. **Check a todo/task** labeled \"B\"?\n5. **Something else** from the current project state?\n\nGive me the specific file or reference, and I'll review it with the precision it deserves. *adjusts glasses* 📋",
+          "usage": {
+            "input": 13,
+            "output": 192,
+            "cost": 0.0066856500000000004,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-12T18:43:42.354Z"
+    }
+  ],
+  "startedAt": "2026-07-12T18:42:07.663Z",
+  "completedAt": "2026-07-12T18:43:42.355Z"
+}

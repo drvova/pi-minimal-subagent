@@ -1,0 +1,12 @@
+{"timestamp":"2026-07-12T18:26:44.102Z","type":"run_started","runId":"run-mri4klqd-04njps","message":"Workflow \"Code Review Pipeline\" started (2 phases)"}
+{"timestamp":"2026-07-12T18:26:44.102Z","type":"phase_started","runId":"run-mri4klqd-04njps","phaseId":"scan","message":"Phase \"Security Scan\" started with 2 tasks"}
+{"timestamp":"2026-07-12T18:26:44.102Z","type":"task_started","runId":"run-mri4klqd-04njps","phaseId":"scan","taskId":"sec1"}
+{"timestamp":"2026-07-12T18:26:44.111Z","type":"task_started","runId":"run-mri4klqd-04njps","phaseId":"scan","taskId":"sec2"}
+{"timestamp":"2026-07-12T18:27:42.072Z","type":"task_completed","runId":"run-mri4klqd-04njps","phaseId":"scan","taskId":"sec2","message":"## Secret Exposure Summary\n\n✅ **Good news:** No exposed secrets found in source code or .env files.\n\n**Clean indicators:**\n- No `.env` files present\n- No hardcoded API keys, passwords, or tokens\n- No "}
+{"timestamp":"2026-07-12T18:28:02.773Z","type":"task_completed","runId":"run-mri4klqd-04njps","phaseId":"scan","taskId":"sec1","message":"## **SECURITY VULNERABILITY SCAN REPORT**\n\n### 📊 **Overall Status**\n```\n🔴 HIGH RISK: 5 HIGH + 1 MODERATE npm vulnerabilities\n🟠 MEDIUM RISK: 1 Path Traversal vulnerability in src/agents/manager.ts\n\ud83d"}
+{"timestamp":"2026-07-12T18:28:02.773Z","type":"phase_completed","runId":"run-mri4klqd-04njps","phaseId":"scan","message":"Phase \"Security Scan\" completed"}
+{"timestamp":"2026-07-12T18:28:02.773Z","type":"phase_started","runId":"run-mri4klqd-04njps","phaseId":"review","message":"Phase \"Code Review\" started with 1 tasks"}
+{"timestamp":"2026-07-12T18:28:02.773Z","type":"task_started","runId":"run-mri4klqd-04njps","phaseId":"review","taskId":"rev1"}
+{"timestamp":"2026-07-12T18:30:38.516Z","type":"task_completed","runId":"run-mri4klqd-04njps","phaseId":"review","taskId":"rev1","message":"## Review Complete ✓\n\n**Comprehensive code quality report written to `CODE_QUALITY_REVIEW.md`.**\n\n### Quick Summary\n\n| Metric | Result |\n|--------|--------|\n| **Overall Grade** | A- |\n| **Tests** | 22"}
+{"timestamp":"2026-07-12T18:30:38.516Z","type":"phase_completed","runId":"run-mri4klqd-04njps","phaseId":"review","message":"Phase \"Code Review\" completed"}
+{"timestamp":"2026-07-12T18:30:38.517Z","type":"run_completed","runId":"run-mri4klqd-04njps","message":"Workflow \"Code Review Pipeline\" completed successfully"}
