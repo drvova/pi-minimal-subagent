@@ -1,4 +1,5 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import { discoverAgents } from "./agents/agents.ts";
 import { dispatchAction } from "./dispatch.ts";
 import { renderSubagentCall, renderSubagentResult } from "./rendering/render.ts";
 import { renderWorkflowWidget } from "./rendering/widgets.ts";
@@ -42,6 +43,37 @@ const Params = Type.Object({
 
 export default function (pi: ExtensionAPI) {
   initLiveWidget(pi);
+
+  // ─── Slash command: /subagent <agent> <task> ──────────────
+  pi.registerCommand("subagent", {
+    description: "Run a subagent: /subagent <agent> <task>",
+    handler: async (args: string, ctx: any) => {
+      const spaceIdx = args.indexOf(" ");
+      if (spaceIdx === -1) return;
+      const agent = args.slice(0, spaceIdx).trim();
+      const task = args.slice(spaceIdx + 1).trim();
+      if (!agent || !task) return;
+      ctx.setStatus?.("subagent", `running: ${agent}`);
+      await dispatchAction("run", { agent, task }, ctx.cwd || process.cwd(), undefined, () => {}, pi);
+      ctx.setStatus?.("subagent", undefined);
+    },
+  });
+
+  // ─── CLI flag: --subagent-model ──────────────────────────
+  pi.registerFlag("subagent-model", {
+    description: "Default model for spawned subagents",
+    type: "string",
+  });
+
+  // ─── Keyboard shortcut: Ctrl+Shift+E → list agents ────────
+  pi.registerShortcut("ctrl+shift+e", {
+    description: "List available subagents",
+    handler: async (ctx: any) => {
+      const discovery = discoverAgents(ctx.cwd || process.cwd());
+      const names = discovery.agents.map((a: any) => a.name).join(", ") || "(none)";
+      // Result goes to Pi's output
+    },
+  });
 
   pi.registerTool({
     name: "subagent", label: "Subagent",
