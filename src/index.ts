@@ -2,7 +2,8 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 import { dispatchAction } from "./dispatch.ts";
 import { renderSubagentCall, renderSubagentResult } from "./rendering/render.ts";
-import { renderGSDWidget, renderGoalWidget, renderWorkflowWidget } from "./rendering/widgets.ts";
+import { renderGoalWidget, renderWorkflowWidget } from "./rendering/widgets.ts";
+import { renderGSDWidget } from "./rendering/widgets-gsd.ts";
 import { renderCompletionNotification } from "./rendering/widgets-notify.ts";
 import { initLiveWidget } from "./rendering/live-widget.ts";
 
