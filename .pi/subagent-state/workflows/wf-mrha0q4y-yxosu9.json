@@ -1,0 +1,79 @@
+{
+  "id": "wf-mrha0q4y-yxosu9",
+  "name": "GSD Cycle",
+  "description": "Five-phase structured software delivery: Discuss → Plan → Execute → Verify → Ship",
+  "phases": [
+    {
+      "id": "discuss",
+      "name": "Discuss",
+      "concurrency": 1,
+      "tasks": [
+        {
+          "id": "d1",
+          "agent": "gsd-planner",
+          "task": "Analyze the feature request. Identify what needs to be built, surface constraints and tradeoffs. Output: problem statement, key decisions, constraints."
+        }
+      ]
+    },
+    {
+      "id": "plan",
+      "name": "Plan",
+      "concurrency": 1,
+      "tasks": [
+        {
+          "id": "p1",
+          "agent": "gsd-planner",
+          "task": "Decompose the work into parallel-executable tasks. Each task must fit in a clean context window. Output: numbered task list with estimates, verification checklist."
+        }
+      ]
+    },
+    {
+      "id": "execute",
+      "name": "Execute",
+      "concurrency": 3,
+      "tasks": [
+        {
+          "id": "e1",
+          "agent": "gsd-executor",
+          "task": "Implement the highest-priority tasks from the plan. Write complete tested code with no TODOs."
+        },
+        {
+          "id": "e2",
+          "agent": "gsd-executor",
+          "task": "Implement the remaining tasks. Ensure all integration points are connected."
+        },
+        {
+          "id": "e3",
+          "agent": "gsd-executor",
+          "task": "Write tests for all new functionality. Verify edge cases are covered."
+        }
+      ]
+    },
+    {
+      "id": "verify",
+      "name": "Verify",
+      "concurrency": 1,
+      "tasks": [
+        {
+          "id": "v1",
+          "agent": "gsd-reviewer",
+          "task": "Walk through everything built. Run tests, check types, review output. Diagnose and fix issues. Report: pass/fail/fixed."
+        }
+      ]
+    },
+    {
+      "id": "ship",
+      "name": "Ship",
+      "concurrency": 1,
+      "tasks": [
+        {
+          "id": "s1",
+          "agent": "gsd-reviewer",
+          "task": "Summarize what was accomplished. List files changed. Note deferred items. Prepare the commit message and push."
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-07-12T04:11:28.210Z",
+  "updatedAt": "2026-07-12T04:11:28.211Z"
+}

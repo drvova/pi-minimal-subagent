@@ -104,6 +104,40 @@ src/
   workflows/        — types, validator, manager, persistence
 ```
 
+## GSD — Structured Software Delivery
+
+The subagent supports the GSD five-phase methodology: Discuss → Plan → Execute → Verify → Ship.
+
+A pre-built GSD workflow is included:
+
+```json
+{ "action": "run-workflow", "workflowId": "<gsd-workflow-id>", "dryRun": false }
+```
+
+Or check available workflows:
+
+```json
+{ "action": "workflows" }
+```
+
+### GSD agents
+
+| Agent | Role | Model |
+|-------|------|-------|
+| `gsd-planner` | Discuss + Plan phases | claude-sonnet-4-5 |
+| `gsd-executor` | Execute phase | claude-sonnet-4-5 |
+| `gsd-reviewer` | Verify + Ship phases | claude-haiku-4-5 |
+
+### GSD workflow phases
+
+```
+1. Discuss (1 task)  — capture decisions, surface constraints
+2. Plan (1 task)     — decompose into parallel tasks, verify plan
+3. Execute (3 tasks) — implement in parallel waves, write tests
+4. Verify (1 task)   — walk through, diagnose, fix
+5. Ship (1 task)     — summarize, commit, archive
+```
+
 ## Development
 
 ```bash
