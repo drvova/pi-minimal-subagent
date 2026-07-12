@@ -96,11 +96,18 @@ async function handleRun(params: any, cwd: string, signal: any, onUpdate: any): 
     const msg = names.length ? `Unknown agent "${params.agent}". Available: ${names.join(", ")}.` : "No agents found.";
     return { content: [{ type: "text", text: msg }], details: makeDetails([failedResult(params.agent, params.task!, msg)], { availableAgents: names, projectAgentsDir: discovery.projectAgentsDir }), isError: true };
   }
+
+  // Frontmatter is authoritative — tool params only fill unspecified fields
+  const effectiveAgent: AgentConfig = { ...agent };
+  if (!effectiveAgent.model && params.model) effectiveAgent.model = params.model;
+  if (!effectiveAgent.thinking && params.thinking) effectiveAgent.thinking = params.thinking;
+  if (!effectiveAgent.skills?.length && params.skills) effectiveAgent.skills = params.skills.split(",").map((s: string) => s.trim()).filter(Boolean);
+  if (!effectiveAgent.extensions?.length && params.extensions) effectiveAgent.extensions = params.extensions.split(",").map((s: string) => s.trim()).filter(Boolean);
   const steerCtrl = new AbortController();
   const linkedSignal = signal ? anySignal([signal, steerCtrl.signal]) : steerCtrl.signal;
-  registerActive(cwd, agent.name, params.task!, 0, steerCtrl);
-  const result = await runSubagent({ cwd, agent, task: params.task!, settings, signal: linkedSignal, onUpdate, makeDetails: (r: any) => makeDetails(r, { projectAgentsDir: discovery.projectAgentsDir, delegation, policyActive: policy?.autoDelegate ?? false }) });
-  unregisterActive(cwd, agent.name);
+  registerActive(cwd, effectiveAgent.name, params.task!, 0, steerCtrl);
+  const result = await runSubagent({ cwd, agent: effectiveAgent, task: params.task!, settings, signal: linkedSignal, onUpdate, makeDetails: (r: any) => makeDetails(r, { projectAgentsDir: discovery.projectAgentsDir, delegation, policyActive: policy?.autoDelegate ?? false }) });
+  unregisterActive(cwd, effectiveAgent.name);
   if (isResultError(result)) {
     return { content: [{ type: "text", text: `Subagent ${result.stopReason || "failed"}: ${getResultSummaryText(result)}` }], details: makeDetails([result], { projectAgentsDir: discovery.projectAgentsDir }), isError: true };
   }
