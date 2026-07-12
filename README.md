@@ -59,6 +59,10 @@ Global: `~/.pi/agent/settings.json`. Project: `.pi/settings.json` (overrides glo
 {
   "pi-minimal-subagent": {
     "extensions": [],
+    "environment": {
+      "API_KEY": "dev-key",
+      "LOG_LEVEL": "debug"
+    },
     "delegation": {
       "autoDelegate": true,
       "complexityThreshold": 0.4,
@@ -71,6 +75,8 @@ Global: `~/.pi/agent/settings.json`. Project: `.pi/settings.json` (overrides glo
   }
 }
 ```
+
+**Environment variables**: The `environment` map overrides or adds variables to the subagent process environment. The parent process environment is inherited, and configured values take precedence. Global and project `environment` settings merge by key, with project values winning.
 
 ## GSD — Structured Software Delivery
 
