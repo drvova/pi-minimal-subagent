@@ -18,10 +18,10 @@ import type { SubagentDetails, SubagentResult } from "./execution/types.ts";
 import { resolveSettings } from "./settings/settings.ts";
 import {
   handleAgentCreate, handleAgentDelete, handleAgentList, handleAgentUpdate,
-  handleRunAbort, handleRunList, handleRunStatus,
   handleTeamCreate, handleTeamDelete, handleTeamList, handleTeamUpdate,
   handleWorkflowCreate, handleWorkflowDelete, handleWorkflowList, handleWorkflowUpdate,
 } from "./dispatch-crud.ts";
+import { handleRunAbort, handleRunList, handleRunStatus } from "./dispatch-runs.ts";
 
 function makeDetails(results: SubagentResult[], extra?: Omit<SubagentDetails, "results">): any {
   return { results, ...extra };
