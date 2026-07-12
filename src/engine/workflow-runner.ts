@@ -31,6 +31,7 @@ function createRun(workflow: WorkflowDefinition, runId?: string): WorkflowRun {
     workflowId: workflow.id,
     workflowName: workflow.name,
     status: "pending",
+    pid: process.pid,
     phaseResults: workflow.phases.map((phase) => ({
       phaseId: phase.id,
       phaseName: phase.name,

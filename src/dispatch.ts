@@ -12,35 +12,45 @@ import { handleRunAbort, handleRunList, handleRunStatus } from "./dispatch-runs.
 
 type ToolResult = { content: Array<{ type: "text"; text: string }>; details: any; isError?: boolean };
 
+type ActionHandler = () => Promise<ToolResult>;
+
 export async function dispatchAction(
-  action: string, params: Record<string, any>,
-  cwd: string, signal: AbortSignal | undefined,
-  onUpdate: any, pi: any,
+  action: string,
+  params: Record<string, any>,
+  cwd: string,
+  signal: AbortSignal | undefined,
+  onUpdate: any,
+  pi: { events?: any } | undefined,
 ): Promise<ToolResult> {
   if (pi?.events) setEventBus(pi.events);
   const a = action || "run";
 
-  if (a === "run") return handleRun(params, cwd, signal, onUpdate);
-  if (a === "run-workflow") return handleWorkflowRun(params, cwd, signal);
-  if (a === "run-goal") return handleGoalRun(params, cwd, signal);
-  if (a === "gsd") return handleGSD(params, cwd, signal);
-  if (a === "steer") return handleSteer(params, cwd, signal, onUpdate);
+  const handlers: Record<string, () => Promise<ToolResult>> = {
+    "run": () => handleRun(params, cwd, signal, onUpdate),
+    "run-workflow": () => handleWorkflowRun(params, cwd, signal),
+    "run-goal": () => handleGoalRun(params, cwd, signal),
+    "gsd": () => handleGSD(params, cwd, signal),
+    "steer": () => handleSteer(params, cwd, signal, onUpdate),
+    "workflows": () => handleWorkflowList(cwd),
+    "workflow-create": () => handleWorkflowCreate(params, cwd),
+    "workflow-update": () => handleWorkflowUpdate(params, cwd),
+    "workflow-delete": () => handleWorkflowDelete(params, cwd),
+    "teams": () => handleTeamList(cwd),
+    "team-create": () => handleTeamCreate(params, cwd),
+    "team-update": () => handleTeamUpdate(params, cwd),
+    "team-delete": () => handleTeamDelete(params, cwd),
+    "agents": () => handleAgentList(cwd),
+    "agent-create": () => handleAgentCreate(params, cwd),
+    "agent-update": () => handleAgentUpdate(params, cwd),
+    "agent-delete": () => handleAgentDelete(params, cwd),
+    "runs": () => handleRunList(cwd),
+    "run-status": () => handleRunStatus(params, cwd),
+    "run-abort": () => handleRunAbort(params),
+  };
 
-  if (a === "workflows") return handleWorkflowList(cwd);
-  if (a === "workflow-create") return handleWorkflowCreate(params, cwd);
-  if (a === "workflow-update") return handleWorkflowUpdate(params, cwd);
-  if (a === "workflow-delete") return handleWorkflowDelete(params, cwd);
-  if (a === "teams") return handleTeamList(cwd);
-  if (a === "team-create") return handleTeamCreate(params, cwd);
-  if (a === "team-update") return handleTeamUpdate(params, cwd);
-  if (a === "team-delete") return handleTeamDelete(params, cwd);
-  if (a === "agents") return handleAgentList(cwd);
-  if (a === "agent-create") return handleAgentCreate(params, cwd);
-  if (a === "agent-update") return handleAgentUpdate(params, cwd);
-  if (a === "agent-delete") return handleAgentDelete(params, cwd);
-  if (a === "runs") return handleRunList(cwd);
-  if (a === "run-status") return handleRunStatus(params, cwd);
-  if (a === "run-abort") return handleRunAbort(params);
-
-  return { content: [{ type: "text", text: `Unknown action "${a}".` }], details: {}, isError: true };
+  const handler = handlers[a];
+  if (!handler) {
+    return { content: [{ type: "text", text: `Unknown action "${a}".` }], details: {}, isError: true };
+  }
+  return handler();
 }

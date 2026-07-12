@@ -11,6 +11,8 @@ export interface WorkflowRun {
   startedAt: string;
   completedAt?: string;
   error?: string;
+  /** Owner process pid — used to detect orphaned 'running' records. */
+  pid?: number;
 }
 
 export interface PhaseResult {

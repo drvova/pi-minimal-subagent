@@ -2,15 +2,33 @@
 // handleRunList, handleRunStatus, handleRunAbort.
 
 import { abortBackgroundRun } from "./engine/background.ts";
-import { getRun, listRuns } from "./runs/persistence.ts";
+import { getRun, listRuns, updateRun } from "./runs/persistence.ts";
 
 type ToolResult = { content: Array<{ type: "text"; text: string }>; details: any; isError?: boolean };
+
+function isPidAlive(pid: number): boolean {
+  try { process.kill(pid, 0); return true; }
+  catch { return false; }
+}
+
+/** Detect orphaned 'running' records whose owner process died (e.g. killed session). */
+function reconcileStaleRun(cwd: string, run: any): any {
+  const active = run.status === "running" || run.status === "pending";
+  if (!active) return run;
+  const ownerDead = run.pid === undefined ? true : (run.pid !== process.pid && !isPidAlive(run.pid));
+  if (!ownerDead) return run;
+  run.status = "failed";
+  run.error = "orphaned: owner process exited before completion";
+  run.completedAt = new Date().toISOString();
+  updateRun(cwd, run);
+  return run;
+}
 
 function err(msg: string): ToolResult {
   return { content: [{ type: "text", text: msg }], details: {}, isError: true };
 }
 
-export function handleRunList(cwd: string): ToolResult {
+export async function handleRunList(cwd: string): Promise<ToolResult> {
   const runs = listRuns(cwd);
   if (!runs.length) return { content: [{ type: "text", text: "No runs found." }], details: {} };
   return { content: [{ type: "text", text: runs.map((r: any) => `${r.status === "completed" ? "\u2713" : r.status === "running" ? "\u2026" : "\u00d7"} ${r.workflowName} (${r.runId})\n  ${r.phaseCount} phases, ${r.taskCount} tasks | ${r.startedAt}`).join("\n\n") }], details: {} };
@@ -20,6 +38,7 @@ export async function handleRunStatus(params: any, cwd: string): Promise<ToolRes
   const agentId = params.agent_id || params.runId;
   if (!agentId) return err("run-status requires runId or agent_id.");
   let run = getRun(cwd, agentId!);
+  if (run) run = reconcileStaleRun(cwd, run);
   if (params.wait) {
     for (let i = 0; i < 120 && run && run.status !== "completed" && run.status !== "failed" && run.status !== "aborted"; i++) {
       await new Promise(r => setTimeout(r, 1000));
@@ -34,7 +53,7 @@ export async function handleRunStatus(params: any, cwd: string): Promise<ToolRes
   return { content: [{ type: "text", text: lines.filter(Boolean).join("\n") }], details: { run, notification } };
 }
 
-export function handleRunAbort(params: any): ToolResult {
+export async function handleRunAbort(params: any): Promise<ToolResult> {
   const agentId = params.agent_id || params.runId;
   if (!agentId) return err("run-abort requires runId or agent_id.");
   return { content: [{ type: "text", text: abortBackgroundRun(agentId!) ? "Abort signal sent." : "Run not found." }], details: {} };

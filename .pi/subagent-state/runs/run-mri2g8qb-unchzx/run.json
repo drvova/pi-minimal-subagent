@@ -1,0 +1,30 @@
+{
+  "id": "run-mri2g8qb-unchzx",
+  "workflowId": "wf-mri1czly-46z8ay",
+  "workflowName": "Probe Flow",
+  "status": "running",
+  "pid": 28323,
+  "phaseResults": [
+    {
+      "phaseId": "p1",
+      "phaseName": "Phase 1",
+      "status": "pending",
+      "startedAt": "2026-07-12T17:27:21.395Z",
+      "taskResults": [
+        {
+          "taskId": "t1",
+          "agent": "scout",
+          "task": "check A",
+          "status": "pending"
+        },
+        {
+          "taskId": "t2",
+          "agent": "scout",
+          "task": "check B",
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+  "startedAt": "2026-07-12T17:27:21.395Z"
+}

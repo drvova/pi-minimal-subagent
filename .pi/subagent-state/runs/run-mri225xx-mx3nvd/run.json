@@ -2,7 +2,7 @@
   "id": "run-mri225xx-mx3nvd",
   "workflowId": "wf-mrha0q4y-yxosu9",
   "workflowName": "GSD Cycle",
-  "status": "running",
+  "status": "failed",
   "phaseResults": [
     {
       "phaseId": "discuss",
@@ -109,5 +109,7 @@
       ]
     }
   ],
-  "startedAt": "2026-07-12T17:16:24.597Z"
+  "startedAt": "2026-07-12T17:16:24.597Z",
+  "error": "orphaned: owner process exited before completion",
+  "completedAt": "2026-07-12T17:27:21.376Z"
 }
