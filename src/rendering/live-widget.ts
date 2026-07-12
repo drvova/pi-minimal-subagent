@@ -3,6 +3,7 @@
 
 import { Container, Spacer, Text } from "@mariozechner/pi-tui";
 import { fmtCount, fmtModelProvider } from "./render-format.ts";
+import { buildFailedState, buildRunningState } from "./live-widget-state.ts";
 
 // ─── Animation ─────────────────────────────────────────────────
 
@@ -108,35 +109,7 @@ export function createLiveWidget(tui: any, theme: any) {
   return component;
 }
 
-// ─── State builders ────────────────────────────────────────────
-
-export function buildRunningState(
-  agent: string,
-  task: string,
-  model: string | undefined,
-  startedAt: string,
-): LiveAgentState {
-  return {
-    agent, task, status: "running", model,
-    inputTokens: 0, outputTokens: 0, cost: 0, turns: 0, startedAt,
-  };
-}
-
-export function buildCompletedState(
-  agent: string,
-  task: string,
-  model: string | undefined,
-  inputTokens: number,
-  outputTokens: number,
-  cost: number,
-  turns: number,
-): LiveAgentState {
-  return {
-    agent, task, status: "completed", model,
-    inputTokens, outputTokens, cost, turns,
-    startedAt: new Date().toISOString(),
-  };
-}
+// ─── Widget init ────────────────────────────────────────────────
 
 export function initLiveWidget(pi: any): void {
   let widgetRegistered = false;
@@ -155,17 +128,4 @@ export function initLiveWidget(pi: any): void {
       widgetRegistered = true;
     }
   });
-}
-
-export function buildFailedState(
-  agent: string,
-  task: string,
-  model: string | undefined,
-  error: string,
-): LiveAgentState {
-  return {
-    agent, task, status: "failed", model,
-    inputTokens: 0, outputTokens: 0, cost: 0, turns: 0,
-    startedAt: new Date().toISOString(),
-  };
 }
