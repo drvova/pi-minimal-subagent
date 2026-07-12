@@ -9,6 +9,7 @@ import { abortBackgroundRun, startBackgroundRun } from "./engine/background.ts";
 import { runGoalLoop } from "./engine/goal-runner.ts";
 import { runWorkflow } from "./engine/workflow-runner.ts";
 import { setEventBus, emitSubagentSteered } from "./engine/events.ts";
+import { listActive, registerActive, steerSubagent, unregisterActive } from "./engine/steering.ts";
 import { runSubagent } from "./execution/runner.ts";
 import { getResultSummaryText } from "./execution/progress.js";
 import { type SubagentDetails, type SubagentResult } from "./execution/types.ts";
@@ -34,8 +35,17 @@ function fmtErrors(errors: Array<{ field: string; message: string }>): string {
   return errors.map((e) => `  ${e.field}: ${e.message}`).join("\n");
 }
 
+function anySignal(signals: AbortSignal[]): AbortSignal {
+  const controller = new AbortController();
+  for (const s of signals) {
+    if (s.aborted) { controller.abort(s.reason); return controller.signal; }
+    s.addEventListener("abort", () => controller.abort(s.reason), { once: true });
+  }
+  return controller.signal;
+}
+
 const Params = Type.Object({
-  action: Type.String({ description: "run | run-workflow | run-goal | workflows | workflow-create | workflow-update | workflow-delete | teams | team-create | team-update | team-delete | agents | agent-create | agent-update | agent-delete | runs | run-status | run-abort" }),
+  action: Type.String({ description: "run | run-workflow | run-goal | steer | workflows | workflow-create | workflow-update | workflow-delete | teams | team-create | team-update | team-delete | agents | agent-create | agent-update | agent-delete | runs | run-status | run-abort" }),
   agent: Type.Optional(Type.String({})), task: Type.Optional(Type.String({})),
   workflowId: Type.Optional(Type.String({})), dryRun: Type.Optional(Type.Boolean({})), background: Type.Optional(Type.Boolean({})),
   goal: Type.Optional(Type.String({})), workerAgent: Type.Optional(Type.String({})), judgeAgent: Type.Optional(Type.String({})), maxTurns: Type.Optional(Type.Number({})), budget: Type.Optional(Type.Number({})),
@@ -100,7 +110,14 @@ export default function (pi: ExtensionAPI) {
           const msg = names.length ? `Unknown agent "${params.agent}". Available: ${names.join(", ")}.` : "No agents found.";
           return { content: [{ type: "text" as const, text: msg }], details: makeDetails([failedResult(params.agent, params.task!, msg)], { availableAgents: names, projectAgentsDir: discovery.projectAgentsDir }), isError: true };
         }
-        const result = await runSubagent({ cwd, agent, task: params.task!, settings, signal, onUpdate, makeDetails: (r) => makeDetails(r, { projectAgentsDir: discovery.projectAgentsDir, delegation, policyActive: policy?.autoDelegate ?? false }) });
+        // Register for potential mid-run steering
+        const steerController = new AbortController();
+        const linkedSignal = signal ? anySignal([signal, steerController.signal]) : steerController.signal;
+        registerActive(cwd, agent.name, params.task!, 0, steerController);
+
+        const result = await runSubagent({ cwd, agent, task: params.task!, settings, signal: linkedSignal, onUpdate, makeDetails: (r) => makeDetails(r, { projectAgentsDir: discovery.projectAgentsDir, delegation, policyActive: policy?.autoDelegate ?? false }) });
+        unregisterActive(cwd, agent.name);
+
         if (isResultError(result)) {
           return { content: [{ type: "text" as const, text: `Subagent ${result.stopReason || "failed"}: ${getResultSummaryText(result)}` }], details: makeDetails([result], { projectAgentsDir: discovery.projectAgentsDir }), isError: true };
         }
@@ -122,6 +139,14 @@ export default function (pi: ExtensionAPI) {
         }
         const run = await runWorkflow({ cwd, workflow: wf, agents: discovery.agents, settings, signal, dryRun: params.dryRun });
         return { content: [{ type: "text" as const, text: `Workflow: ${run.workflowName} — ${run.status}` }], details: { run } };
+      }
+
+      // ─── steer ─────────────────────────────────────────────
+      if (a === "steer") {
+        if (!params.agent || !params.task) return { content: [{ type: "text" as const, text: "action=steer requires agent and task (steering message)." }], details: {}, isError: true };
+        const steerResult = steerSubagent(cwd, params.agent!, params.task!, params.name || "manual steer");
+        if (!steerResult) return { content: [{ type: "text" as const, text: `No active subagent "${params.agent}" found. Active: ${listActive(cwd).map(a => a.agent).join(", ") || "(none)"}` }], details: {} };
+        return { content: [{ type: "text" as const, text: `Steered "${params.agent}": ${steerResult.reason}\nNew task: ${steerResult.newTask.slice(0, 200)}` }], details: { steered: steerResult } };
       }
 
       // ─── run-goal ────────────────────────────────────────────
