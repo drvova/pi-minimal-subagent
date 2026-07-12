@@ -16,7 +16,8 @@
   },
   "scripts": {
     "test": "node --test src/**/*.test.*",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "bun:compile": "bun build --compile --minify ./src/index.ts --outfile dist/pi-minimal-subagent"
   },
   "license": "MIT",
   "peerDependencies": {

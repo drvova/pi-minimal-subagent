@@ -52,6 +52,16 @@ export async function bunSpawnTask(
   return { response, usage, exitCode };
 }
 
+// ─── Native JSONL streaming parser (Bun.file().lines()) ───────
+
+export async function* bunReadJsonLines(path: string): AsyncGenerator<any> {
+  if (!isBun) return;
+  const file = (globalThis as any).Bun.file(path);
+  for await (const line of file.stream().pipeThrough(new TextDecoderStream())) {
+    try { yield JSON.parse(line); } catch { /* skip bad lines */ }
+  }
+}
+
 // ─── IPC-enabled spawn for mid-run steering ─────────────────
 
 export interface IPCSpawn {
