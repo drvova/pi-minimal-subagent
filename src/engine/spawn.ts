@@ -3,6 +3,7 @@ import type { AgentConfig } from "../agents/agents.ts";
 import type { Settings } from "../settings/settings.ts";
 import type { TaskResult } from "../runs/types.ts";
 import type { WorkflowTask } from "../workflows/types.ts";
+import { bunSpawnTask, isBun } from "../execution/bun-spawn.ts";
 
 export function now(): string {
   return new Date().toISOString();
@@ -49,6 +50,15 @@ export function buildArgsForTask(task: string, agent: AgentConfig, settings: Set
 export function spawnForTask(
   cwd: string, task: string, agent: AgentConfig, settings: Settings,
 ): Promise<{ response: string; usage: { input: number; output: number; cost: number } }> {
+  // Bun-native fast path
+  if (isBun) {
+    const args = buildArgsForTask(task, agent, settings);
+    return bunSpawnTask(process.execPath, [process.argv[1] ?? "", ...args], cwd, settings.environment ?? {}).then(r => ({
+      response: r.response, usage: r.usage,
+    }));
+  }
+
+  // Node.js fallback
   return new Promise((resolve) => {
     const args = buildArgsForTask(task, agent, settings);
     const proc = spawn(process.execPath, [process.argv[1] ?? "", ...args], {

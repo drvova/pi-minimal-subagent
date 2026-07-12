@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { WorkflowDefinition } from "./types.ts";
+import { dbDeleteWorkflow, dbGetWorkflow, dbListWorkflows, dbSaveWorkflow, isBun } from "../state/db.ts";
 
 const STATE_DIR = ".pi/subagent-state";
 
@@ -34,6 +35,7 @@ function workflowPath(cwd: string, id: string): string {
 }
 
 export function listWorkflows(cwd: string): WorkflowDefinition[] {
+  if (isBun) return dbListWorkflows(cwd) as WorkflowDefinition[];
   const dir = workflowsDir(cwd);
   if (!fs.existsSync(dir)) return [];
 
@@ -45,15 +47,18 @@ export function listWorkflows(cwd: string): WorkflowDefinition[] {
 }
 
 export function getWorkflow(cwd: string, id: string): WorkflowDefinition | null {
+  if (isBun) return dbGetWorkflow(cwd, id) as WorkflowDefinition | null;
   return readJson<WorkflowDefinition>(workflowPath(cwd, id));
 }
 
 export function saveWorkflow(cwd: string, workflow: WorkflowDefinition): void {
   workflow.updatedAt = new Date().toISOString();
+  if (isBun) { dbSaveWorkflow(cwd, workflow); return; }
   writeJson(workflowPath(cwd, workflow.id), workflow);
 }
 
 export function deleteWorkflow(cwd: string, id: string): boolean {
+  if (isBun) { dbDeleteWorkflow(cwd, id); return true; }
   const p = workflowPath(cwd, id);
   if (!fs.existsSync(p)) return false;
   fs.unlinkSync(p);

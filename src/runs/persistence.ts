@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { BackgroundRun, RunEvent, RunListEntry, WorkflowRun } from "./types.ts";
+import { dbAppendRunEvent, dbGetRun, dbListRuns, dbSaveRun, dbUpdateRun, isBun } from "../state/db.ts";
 
 const STATE_DIR = ".pi/subagent-state";
 
@@ -43,23 +44,28 @@ function runManifestPath(cwd: string, runId: string): string {
 }
 
 export function saveRun(cwd: string, run: WorkflowRun): void {
+  if (isBun) { dbSaveRun(cwd, run); return; }
   ensureDir(runDir(cwd, run.id));
   writeJson(runManifestPath(cwd, run.id), run);
 }
 
 export function getRun(cwd: string, runId: string): WorkflowRun | null {
+  if (isBun) return dbGetRun(cwd, runId) as WorkflowRun | null;
   return readJson<WorkflowRun>(runManifestPath(cwd, runId));
 }
 
 export function updateRun(cwd: string, run: WorkflowRun): void {
+  if (isBun) { dbUpdateRun(cwd, run); return; }
   writeJson(runManifestPath(cwd, run.id), run);
 }
 
 export function appendRunEvent(cwd: string, runId: string, event: RunEvent): void {
+  if (isBun) { dbAppendRunEvent(cwd, runId, event); return; }
   appendJsonLine(path.join(runDir(cwd, runId), "events.jsonl"), event);
 }
 
 export function listRuns(cwd: string): RunListEntry[] {
+  if (isBun) return dbListRuns(cwd) as RunListEntry[];
   const dir = runsDir(cwd);
   if (!fs.existsSync(dir)) return [];
 
