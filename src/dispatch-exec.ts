@@ -90,9 +90,9 @@ export async function handleRun(params: any, cwd: string, signal: any, onUpdate:
   if (params._parentContext) task = `[PARENT CONTEXT]\n${params._parentContext}\n\n[TASK]\n${task}`;
   const steerCtrl = new AbortController();
   const linkedSignal = signal ? anySignal([signal, steerCtrl.signal]) : steerCtrl.signal;
-  registerActive(cwd, effectiveAgent.name, task, 0, steerCtrl);
+  const activeId = registerActive(cwd, effectiveAgent.name, task, 0, steerCtrl);
   const result = await runSubagent({ cwd, agent: effectiveAgent, task, settings, signal: linkedSignal, onUpdate, makeDetails: (r: any) => makeDetails(r, { projectAgentsDir: discovery.projectAgentsDir, delegation, policyActive: policy?.autoDelegate ?? false }) });
-  unregisterActive(cwd, effectiveAgent.name);
+  unregisterActive(activeId);
   if (isResultError(result)) {
     return { content: [{ type: "text", text: `Subagent ${result.stopReason || "failed"}: ${getResultSummaryText(result)}` }], details: makeDetails([result], { projectAgentsDir: discovery.projectAgentsDir }), isError: true };
   }
