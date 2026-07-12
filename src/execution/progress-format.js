@@ -5,6 +5,10 @@
 
 import { formatCount, MAX_INLINE_ERROR_PREVIEW_CHARS, truncateInline } from "./format-utils.js";
 
+// Use Pi's built-in truncateLine when available (Bun runtime); fall back to custom truncateInline
+var peekLine = truncateInline;
+try { var piModule = require("@mariozechner/pi-coding-agent"); if (piModule.truncateLine) peekLine = function(t,n) { return piModule.truncateLine(t,n).text; }; } catch(e) {}
+
 function getLatestRelevantToolExecution(result) {
   const activities = Array.isArray(result?.activities) ? result.activities : [];
   for (let i = activities.length - 1; i >= 0; i--) {
@@ -31,7 +35,7 @@ function formatToolStatusIcon(tool) {
 function formatToolErrorSuffix(tool) {
   if (tool?.status !== "error" && !tool?.isError) return "";
   if (typeof tool.latestText !== "string" || !tool.latestText.trim()) return "";
-  return ` — ${truncateInline(tool.latestText, MAX_INLINE_ERROR_PREVIEW_CHARS)}`;
+  return ` — ${peekLine(tool.latestText, MAX_INLINE_ERROR_PREVIEW_CHARS)}`;
 }
 
 function formatThinkingActivityProgress(thinking) {
