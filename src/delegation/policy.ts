@@ -59,6 +59,21 @@ export function selectAgent(
   return agents.find((a) => a.name === scored[0].rule.agent) ?? null;
 }
 
+/** Zero-config auto selection: score agents by task-token overlap with name+description. */
+export function matchAgentByDescription(task: string, agents: AgentConfig[]): AgentConfig | undefined {
+  if (!agents.length) return undefined;
+  const tokens = new Set(task.toLowerCase().split(/[^a-z0-9]+/).filter((t) => t.length > 2));
+  let best: AgentConfig | undefined;
+  let bestScore = 0;
+  for (const a of agents) {
+    const text = `${a.name} ${a.description}`.toLowerCase();
+    let score = 0;
+    for (const t of tokens) if (text.includes(t)) score++;
+    if (score > bestScore) { bestScore = score; best = a; }
+  }
+  return best ?? agents[0];
+}
+
 export function formatComplexityReport(report: ComplexityReport): string {
   const c = report.components;
   return [

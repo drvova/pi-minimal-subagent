@@ -1,5 +1,5 @@
 import type { AgentConfig } from "../agents/agents.ts";
-import { selectAgent } from "../delegation/policy.ts";
+import { matchAgentByDescription, selectAgent } from "../delegation/policy.ts";
 import type { PhaseResult, WorkflowRun } from "../runs/types.ts";
 import type { WorkflowDefinition, WorkflowTask } from "../workflows/types.ts";
 import { appendRunEvent } from "../runs/persistence.ts";
@@ -42,8 +42,9 @@ export async function runPhase(
         return tr;
       }
       let agent = agents.find((a) => a.name === task.agent);
-      if (!agent && task.agent === "auto" && settings.delegation?.agentRouting) {
-        agent = selectAgent(task.task, settings.delegation.agentRouting, agents) ?? agents[0];
+      if (!agent && task.agent === "auto") {
+        const routed = settings.delegation?.agentRouting ? selectAgent(task.task, settings.delegation.agentRouting, agents) : null;
+        agent = routed ?? matchAgentByDescription(task.task, agents);
       }
       if (!agent) {
         const tr = phaseResult.taskResults.find((t) => t.taskId === task.id)!;

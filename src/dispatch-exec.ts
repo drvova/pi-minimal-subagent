@@ -4,7 +4,7 @@
 import type { AgentConfig } from "./agents/agents.ts";
 import { discoverAgents } from "./agents/agents.ts";
 import type { DelegationDecision } from "./delegation/policy.ts";
-import { evaluatePolicy, formatComplexityReport, selectAgent } from "./delegation/policy.ts";
+import { evaluatePolicy, formatComplexityReport, matchAgentByDescription, selectAgent } from "./delegation/policy.ts";
 import { startBackgroundRun } from "./engine/background.ts";
 import { emitSubagentSteered } from "./engine/events.ts";
 import { runGSDCycle } from "./engine/gsd-runner.ts";
@@ -65,16 +65,14 @@ export async function handleRun(params: any, cwd: string, signal: any, onUpdate:
     }
   }
   let agent: AgentConfig | undefined = discovery.agents.find((c: any) => c.name === params.agent);
-  if (!agent && params.agent === "auto" && policy?.agentRouting) {
-    const routed = selectAgent(params.task!, policy.agentRouting, discovery.agents);
-    if (routed) emitSubagentSteered("auto", routed.name, params.task!, "policy routing", cwd);
-    agent = routed ?? (discovery.agents[0] || undefined);
+  if (!agent && params.agent === "auto") {
+    const routed = policy?.agentRouting ? selectAgent(params.task!, policy.agentRouting, discovery.agents) : null;
+    agent = routed ?? matchAgentByDescription(params.task!, discovery.agents);
+    if (agent) emitSubagentSteered("auto", agent.name, params.task!, routed ? "policy routing" : "description match", cwd);
   }
   if (!agent) {
     const names = discovery.agents.map((x: any) => x.name);
-    const msg = params.agent === "auto"
-      ? `agent "auto" requires a delegation policy with agentRouting (settings key "pi-minimal-subagent".delegation). Available agents: ${names.join(", ") || "(none)"}.`
-      : names.length ? `Unknown agent "${params.agent}". Available: ${names.join(", ")}.` : "No agents found.";
+    const msg = names.length ? `Unknown agent "${params.agent}". Available: ${names.join(", ")}.` : "No agents found.";
     return { content: [{ type: "text", text: msg }], details: makeDetails([failedResult(params.agent, params.task!, msg)], { availableAgents: names, projectAgentsDir: discovery.projectAgentsDir }), isError: true };
   }
   const effectiveAgent: AgentConfig = { ...agent };

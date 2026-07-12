@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { analyzeTaskComplexity } from "./complexity.ts";
-import { evaluatePolicy, selectAgent } from "./policy.ts";
+import { evaluatePolicy, matchAgentByDescription, selectAgent } from "./policy.ts";
 import type { AgentConfig } from "../agents/agents.ts";
 import type { DelegationPolicy } from "./policy.ts";
 
@@ -104,4 +104,15 @@ test("selectAgent: picks highest weighted match", () => {
   const result = selectAgent("test the coverage report", routing, agents);
   assert.ok(result);
   assert.equal(result!.name, "tester");
+});
+
+test("matchAgentByDescription picks agent by token overlap", () => {
+  const agents = [
+    { name: "scout", description: "Fast codebase reconnaissance", source: "project", filePath: "", systemPrompt: "" },
+    { name: "gsd-reviewer", description: "GSD Verify and Ship phase agent", source: "project", filePath: "", systemPrompt: "" },
+  ] as AgentConfig[];
+  assert.equal(matchAgentByDescription("verify the ship checklist", agents)?.name, "gsd-reviewer");
+  assert.equal(matchAgentByDescription("reconnaissance of codebase", agents)?.name, "scout");
+  assert.equal(matchAgentByDescription("zzz qqq", agents)?.name, "scout"); // no overlap -> first agent
+  assert.equal(matchAgentByDescription("anything", []), undefined);
 });
