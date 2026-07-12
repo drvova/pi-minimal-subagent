@@ -17,7 +17,7 @@ export async function dispatchAction(
   cwd: string, signal: AbortSignal | undefined,
   onUpdate: any, pi: any,
 ): Promise<ToolResult> {
-  setEventBus(pi.events);
+  if (pi?.events) setEventBus(pi.events);
   const a = action || "run";
 
   if (a === "run") return handleRun(params, cwd, signal, onUpdate);

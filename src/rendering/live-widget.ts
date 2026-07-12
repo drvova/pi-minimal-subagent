@@ -3,7 +3,7 @@
 
 import { Container, Spacer, Text } from "@mariozechner/pi-tui";
 import { fmtCount, fmtModelProvider } from "./render-format.ts";
-import { buildFailedState, buildRunningState } from "./live-widget-state.ts";
+import { buildCompletedState, buildFailedState, buildRunningState } from "./live-widget-state.ts";
 
 // ─── Animation ─────────────────────────────────────────────────
 
@@ -117,7 +117,10 @@ export function initLiveWidget(pi: any): void {
   pi.events.on("subagent:created", (data: any) => {
     updateLiveState({ agents: [buildRunningState(data.agent, data.task, data.model, data.timestamp)] });
   });
-  pi.events.on("subagent:completed", () => updateLiveState({ agents: [] }));
+  pi.events.on("subagent:completed", (data: any) => {
+    updateLiveState({ agents: [buildCompletedState(data.agent, data.task, undefined, 0, 0, data.cost ?? 0, data.turns ?? 0)] });
+    setTimeout(() => updateLiveState({ agents: [] }), 5000);
+  });
   pi.events.on("subagent:failed", (data: any) => {
     updateLiveState({ agents: [buildFailedState(data.agent, data.task, data.model, data.errorMessage || "failed")] });
   });

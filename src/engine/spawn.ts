@@ -4,6 +4,7 @@ import type { Settings } from "../settings/settings.ts";
 import type { TaskResult } from "../runs/types.ts";
 import type { WorkflowTask } from "../workflows/types.ts";
 import { bunSpawnTask, isBun } from "../execution/bun-spawn.ts";
+import { resolvePiSpawn } from "../execution/runner-helpers.ts";
 
 export function now(): string {
   return new Date().toISOString();
@@ -53,7 +54,8 @@ export function spawnForTask(
   // Bun-native fast path
   if (isBun) {
     const args = buildArgsForTask(task, agent, settings);
-    return bunSpawnTask(process.execPath, [process.argv[1] ?? "", ...args], cwd, settings.environment ?? {}).then(r => ({
+    const pi = resolvePiSpawn();
+    return bunSpawnTask(pi.command, [...pi.prefixArgs, ...args], cwd, settings.environment ?? {}).then(r => ({
       response: r.response, usage: r.usage,
     }));
   }
@@ -61,7 +63,8 @@ export function spawnForTask(
   // Node.js fallback
   return new Promise((resolve) => {
     const args = buildArgsForTask(task, agent, settings);
-    const proc = spawn(process.execPath, [process.argv[1] ?? "", ...args], {
+    const pi = resolvePiSpawn();
+    const proc = spawn(pi.command, [...pi.prefixArgs, ...args], {
       cwd, shell: false, stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env, ...(settings.environment ?? {}) },
     });
@@ -109,7 +112,8 @@ export function spawnPiTask(
       startedAt: now(),
     };
 
-    const proc = spawn(process.execPath, [process.argv[1] ?? "", ...args], {
+    const piSpawn = resolvePiSpawn();
+    const proc = spawn(piSpawn.command, [...piSpawn.prefixArgs, ...args], {
       cwd,
       shell: false,
       stdio: ["pipe", "pipe", "pipe"],

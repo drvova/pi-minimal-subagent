@@ -13,10 +13,14 @@ export const STDOUT_TAIL_LINES = 40;
 export function resolvePiSpawn(): { command: string; prefixArgs: string[] } {
   const isNode = /[\\/]node(?:\.exe)?$/i.test(process.execPath);
   const isBun = /[\\/]bun(?:\.exe)?$/i.test(process.execPath);
-  if ((isNode || isBun) && process.argv[1]) {
-    return { command: process.execPath, prefixArgs: [process.argv[1]] };
+  if (!isNode && !isBun) return { command: process.execPath, prefixArgs: [] }; // compiled pi binary
+  const entry = process.argv[1] ?? "";
+  const entryBase = path.basename(entry).toLowerCase();
+  if (entry && (entryBase === "pi" || entryBase === "pi.js" || entry.includes("pi-coding-agent"))) {
+    return { command: process.execPath, prefixArgs: [entry] };
   }
-  return { command: process.execPath, prefixArgs: [] };
+  // Parent is not Pi (tests, direct node/bun invocation) — use pi from PATH
+  return { command: "pi", prefixArgs: [] };
 }
 
 export function writeSystemPromptToTempFile(systemPrompt: string): { dir: string; filePath: string } {

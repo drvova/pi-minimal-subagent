@@ -1,6 +1,7 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { discoverAgents } from "./agents/agents.ts";
 import { dispatchAction } from "./dispatch.ts";
+import { extractParentContext } from "./dispatch-exec.ts";
 import { renderSubagentCall, renderSubagentResult } from "./rendering/render.ts";
 import { renderWorkflowWidget } from "./rendering/widgets.ts";
 import { renderGoalWidget } from "./rendering/widgets-goal.ts";
@@ -91,7 +92,9 @@ export default function (pi: ExtensionAPI) {
       return renderSubagentResult(toolResult, opts, theme);
     },
     async execute(_toolCallId, params, signal, onUpdate, ctx) {
-      return dispatchAction((params as any).action || "run", params as any, ctx.cwd, signal, onUpdate, pi);
+      const p = params as any;
+      if (p.inherit_context && (ctx as any).sessionManager) p._parentContext = extractParentContext((ctx as any).sessionManager);
+      return dispatchAction(p.action || "run", p, ctx.cwd, signal, onUpdate, pi);
     },
   });
 }

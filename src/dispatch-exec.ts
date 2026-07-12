@@ -16,6 +16,7 @@ import { emptyUsage, isResultError } from "./execution/result-utils.ts";
 import { runSubagent } from "./execution/runner.ts";
 import type { SubagentDetails, SubagentResult } from "./execution/types.ts";
 import { resolveSettings } from "./settings/settings.ts";
+import { getRun } from "./runs/persistence.ts";
 import { listWorkflows } from "./workflows/persistence.ts";
 
 type ToolResult = { content: Array<{ type: "text"; text: string }>; details: any; isError?: boolean };
@@ -33,6 +34,22 @@ function anySignal(signals: AbortSignal[]): AbortSignal {
 }
 function err(msg: string): ToolResult {
   return { content: [{ type: "text", text: msg }], details: {}, isError: true };
+}
+
+/** Extract recent user/assistant conversation text from Pi's session manager for inherit_context. */
+export function extractParentContext(sessionManager: any, maxChars = 6000): string {
+  const branch = sessionManager?.getBranch?.() ?? [];
+  const parts: string[] = [];
+  for (const entry of branch) {
+    const m = entry?.message;
+    if (!m || (m.role !== "user" && m.role !== "assistant")) continue;
+    const text = typeof m.content === "string"
+      ? m.content
+      : Array.isArray(m.content) ? m.content.filter((b: any) => b?.type === "text").map((b: any) => b.text).join("\n") : "";
+    if (text.trim()) parts.push(`${m.role}: ${text.trim()}`);
+  }
+  const joined = parts.join("\n\n");
+  return joined.length > maxChars ? joined.slice(-maxChars) : joined;
 }
 
 export async function handleRun(params: any, cwd: string, signal: any, onUpdate: any): Promise<ToolResult> {
@@ -63,10 +80,18 @@ export async function handleRun(params: any, cwd: string, signal: any, onUpdate:
   if (!effectiveAgent.thinking && params.thinking) effectiveAgent.thinking = params.thinking;
   if (!effectiveAgent.skills?.length && params.skills) effectiveAgent.skills = params.skills.split(",").map((s: string) => s.trim()).filter(Boolean);
   if (!effectiveAgent.extensions?.length && params.extensions) effectiveAgent.extensions = params.extensions.split(",").map((s: string) => s.trim()).filter(Boolean);
+  let task: string = params.task!;
+  if (params.resume) {
+    const prior = getRun(cwd, params.resume);
+    if (!prior) return err(`resume: run "${params.resume}" not found.`);
+    const priorOut = (prior.phaseResults ?? []).flatMap((ph: any) => ph.taskResults ?? []).map((t: any) => t.response).filter(Boolean).join("\n");
+    task = `[RESUMING run ${params.resume}]\nPrior output:\n${priorOut.slice(-4000)}\n\nContinue: ${task}`;
+  }
+  if (params._parentContext) task = `[PARENT CONTEXT]\n${params._parentContext}\n\n[TASK]\n${task}`;
   const steerCtrl = new AbortController();
   const linkedSignal = signal ? anySignal([signal, steerCtrl.signal]) : steerCtrl.signal;
-  registerActive(cwd, effectiveAgent.name, params.task!, 0, steerCtrl);
-  const result = await runSubagent({ cwd, agent: effectiveAgent, task: params.task!, settings, signal: linkedSignal, onUpdate, makeDetails: (r: any) => makeDetails(r, { projectAgentsDir: discovery.projectAgentsDir, delegation, policyActive: policy?.autoDelegate ?? false }) });
+  registerActive(cwd, effectiveAgent.name, task, 0, steerCtrl);
+  const result = await runSubagent({ cwd, agent: effectiveAgent, task, settings, signal: linkedSignal, onUpdate, makeDetails: (r: any) => makeDetails(r, { projectAgentsDir: discovery.projectAgentsDir, delegation, policyActive: policy?.autoDelegate ?? false }) });
   unregisterActive(cwd, effectiveAgent.name);
   if (isResultError(result)) {
     return { content: [{ type: "text", text: `Subagent ${result.stopReason || "failed"}: ${getResultSummaryText(result)}` }], details: makeDetails([result], { projectAgentsDir: discovery.projectAgentsDir }), isError: true };
