@@ -49,13 +49,13 @@ export function buildArgsForTask(task: string, agent: AgentConfig, settings: Set
 }
 
 export function spawnForTask(
-  cwd: string, task: string, agent: AgentConfig, settings: Settings,
+  cwd: string, task: string, agent: AgentConfig, settings: Settings, signal?: AbortSignal,
 ): Promise<{ response: string; usage: { input: number; output: number; cost: number } }> {
   // Bun-native fast path
   if (isBun) {
     const args = buildArgsForTask(task, agent, settings);
     const pi = resolvePiSpawn();
-    return bunSpawnTask(pi.command, [...pi.prefixArgs, ...args], cwd, settings.environment ?? {}).then(r => ({
+    return bunSpawnTask(pi.command, [...pi.prefixArgs, ...args], cwd, settings.environment ?? {}, signal).then(r => ({
       response: r.response, usage: r.usage,
     }));
   }
@@ -68,11 +68,14 @@ export function spawnForTask(
       cwd, shell: false, stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env, ...(settings.environment ?? {}) },
     });
+    const onAbort = () => { try { proc.kill("SIGTERM"); } catch { /* already dead */ } };
+    signal?.addEventListener("abort", onAbort, { once: true });
     proc.stdin.end();
     let stdout = "";
     proc.stdout.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
     proc.stderr.on("data", () => {});
     proc.on("close", () => {
+      signal?.removeEventListener("abort", onAbort);
       let response = "";
       let usage = { input: 0, output: 0, cost: 0 };
       for (const line of stdout.split(/\r?\n/).filter(Boolean)) {
@@ -101,6 +104,7 @@ export function spawnPiTask(
   task: WorkflowTask,
   agent: AgentConfig,
   settings: Settings,
+  signal?: AbortSignal,
 ): Promise<TaskResult> {
   return new Promise((resolve) => {
     const args = buildChildArgs(task, agent, settings);
@@ -122,6 +126,9 @@ export function spawnPiTask(
         ...(settings.environment ?? {}),
       },
     });
+
+    const onAbort = () => { try { proc.kill(isWindows ? undefined : "SIGTERM"); } catch { /* already dead */ } };
+    signal?.addEventListener("abort", onAbort, { once: true });
 
     proc.stdin.end();
 
@@ -170,8 +177,11 @@ export function spawnPiTask(
         result.errorMessage = stderr.trim();
       }
 
-      // needs_attention: process exited cleanly but produced no substantive output
-      if (code === 0 && !result.response && !result.errorMessage) {
+      signal?.removeEventListener("abort", onAbort);
+      if (signal?.aborted) {
+        result.status = "aborted";
+      } else if (code === 0 && !result.response && !result.errorMessage) {
+        // needs_attention: process exited cleanly but produced no substantive output
         result.status = "needs_attention";
       } else {
         result.status = code === 0 ? "completed" : "failed";

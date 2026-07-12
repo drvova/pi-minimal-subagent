@@ -1,0 +1,8 @@
+{"timestamp":"2026-07-12T16:45:33.907Z","type":"run_started","runId":"run-mri0yhxu-zg7bcn","message":"Workflow \"Code Review Pipeline\" started (2 phases)"}
+{"timestamp":"2026-07-12T16:45:33.907Z","type":"phase_started","runId":"run-mri0yhxu-zg7bcn","phaseId":"scan","message":"Phase \"Security Scan\" started with 2 tasks"}
+{"timestamp":"2026-07-12T16:45:33.907Z","type":"task_started","runId":"run-mri0yhxu-zg7bcn","phaseId":"scan","taskId":"sec1"}
+{"timestamp":"2026-07-12T16:45:33.916Z","type":"task_started","runId":"run-mri0yhxu-zg7bcn","phaseId":"scan","taskId":"sec2"}
+{"timestamp":"2026-07-12T16:46:29.070Z","type":"task_completed","runId":"run-mri0yhxu-zg7bcn","phaseId":"scan","taskId":"sec2","message":"## ✅ Security Scan Complete\n\n**Status: CLEAN — No exposed secrets detected**\n\n### Findings\n\n| Category | Result |\n|----------|--------|\n| Hardcoded API keys/tokens | ✅ None found |\n| Private key files"}
+{"timestamp":"2026-07-12T16:46:47.486Z","type":"task_completed","runId":"run-mri0yhxu-zg7bcn","phaseId":"scan","taskId":"sec1","message":"## SECURITY SCAN REPORT\n\n**Severity Overview:** 🟠 **6 Medium-High Issues** (5 HIGH npm vuln + 1 Path Traversal Risk)\n\n---\n\n### 🔴 CRITICAL: Dependency Vulnerabilities\n**6 vulnerabilities found** in `"}
+{"timestamp":"2026-07-12T16:46:47.486Z","type":"phase_completed","runId":"run-mri0yhxu-zg7bcn","phaseId":"scan","message":"Phase \"Security Scan\" completed"}
+{"timestamp":"2026-07-12T16:46:47.487Z","type":"run_completed","runId":"run-mri0yhxu-zg7bcn","message":"Workflow \"Code Review Pipeline\" completed successfully"}

@@ -10,7 +10,7 @@ export interface SpawnResult {
 }
 
 export async function bunSpawnTask(
-  command: string, args: string[], cwd: string, env: Record<string, string>,
+  command: string, args: string[], cwd: string, env: Record<string, string>, signal?: AbortSignal,
 ): Promise<SpawnResult> {
   if (!isBun) {
     // Fallback: use Node spawn (handled by caller)
@@ -24,9 +24,13 @@ export async function bunSpawnTask(
     stderr: "pipe",
   });
 
+  const onAbort = () => { try { proc.kill(); } catch { /* already dead */ } };
+  signal?.addEventListener("abort", onAbort, { once: true });
+
   const stdout = await new Response(proc.stdout).text();
   const stderr = await new Response(proc.stderr).text();
   const exitCode = await proc.exited;
+  signal?.removeEventListener("abort", onAbort);
 
   let response = "";
   let usage = { input: 0, output: 0, cost: 0 };

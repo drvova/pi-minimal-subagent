@@ -62,7 +62,7 @@ export async function runGoalLoop(opts: GoalRunnerOptions): Promise<GoalRun> {
     }
 
     // Worker turn
-    const workerResult = await spawnForTask(cwd, workerTask, workerAgent, settings);
+    const workerResult = await spawnForTask(cwd, workerTask, workerAgent, settings, signal);
     turn.workerResponse = workerResult.response;
     turn.usage.workerInput = workerResult.usage.input;
     turn.usage.workerOutput = workerResult.usage.output;
@@ -75,7 +75,7 @@ export async function runGoalLoop(opts: GoalRunnerOptions): Promise<GoalRun> {
 
     // Judge turn
     const judgePrompt = buildJudgePrompt(config.goal, workerResult.response, turnNum);
-    const judgeResult = await spawnForTask(cwd, judgePrompt, judgeAgent, settings);
+    const judgeResult = await spawnForTask(cwd, judgePrompt, judgeAgent, settings, signal);
     turn.usage.judgeInput = judgeResult.usage.input;
     turn.usage.judgeOutput = judgeResult.usage.output;
     turn.usage.judgeCost = judgeResult.usage.cost;

@@ -59,7 +59,7 @@ export async function runPhase(
         timestamp: now(), type: "task_started", runId: run.id,
         phaseId: phase.id, taskId: task.id,
       });
-      const result = await spawnPiTask(cwd, task, agent, settings);
+      const result = await spawnPiTask(cwd, task, agent, settings, signal);
       const existing = phaseResult.taskResults.find((t) => t.taskId === task.id)!;
       Object.assign(existing, result);
       appendRunEvent(cwd, run.id, {

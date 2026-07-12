@@ -1,0 +1,6 @@
+{"timestamp":"2026-07-12T16:45:17.040Z","type":"run_started","runId":"run-mri0y4xb-nryo5i","message":"Workflow \"Code Review Pipeline\" started (2 phases)"}
+{"timestamp":"2026-07-12T16:45:17.040Z","type":"phase_started","runId":"run-mri0y4xb-nryo5i","phaseId":"scan","message":"Phase \"Security Scan\" started with 2 tasks"}
+{"timestamp":"2026-07-12T16:45:17.040Z","type":"phase_completed","runId":"run-mri0y4xb-nryo5i","phaseId":"scan","message":"Phase \"Security Scan\" completed"}
+{"timestamp":"2026-07-12T16:45:17.040Z","type":"phase_started","runId":"run-mri0y4xb-nryo5i","phaseId":"review","message":"Phase \"Code Review\" started with 1 tasks"}
+{"timestamp":"2026-07-12T16:45:17.040Z","type":"phase_completed","runId":"run-mri0y4xb-nryo5i","phaseId":"review","message":"Phase \"Code Review\" completed"}
+{"timestamp":"2026-07-12T16:45:17.040Z","type":"run_completed","runId":"run-mri0y4xb-nryo5i","message":"Workflow \"Code Review Pipeline\" completed successfully"}
