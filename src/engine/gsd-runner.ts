@@ -5,7 +5,7 @@ import type { AgentConfig } from "../agents/agents.ts";
 import { discoverAgents } from "../agents/agents.ts";
 import type { Settings } from "../settings/settings.ts";
 import { now, spawnForTask } from "./spawn.ts";
-import { emitSubagentCreated, emitSubagentCompleted, emitSubagentFailed } from "./events.ts";
+import { emitSubagentCompleted, emitSubagentCreated, emitSubagentFailed } from "./events.ts";
 
 export interface GSDOptions {
   cwd: string;

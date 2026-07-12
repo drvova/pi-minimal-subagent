@@ -2,12 +2,12 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 import { dispatchAction } from "./dispatch.ts";
 import { renderSubagentCall, renderSubagentResult } from "./rendering/render.ts";
-import { renderGoalWidget, renderWorkflowWidget } from "./rendering/widgets.ts";
+import { renderGSDWidget, renderGoalWidget, renderWorkflowWidget } from "./rendering/widgets.ts";
 import { renderCompletionNotification } from "./rendering/widgets-notify.ts";
 import { initLiveWidget } from "./rendering/live-widget.ts";
 
 const Params = Type.Object({
-  action: Type.String({ description: "run | run-workflow | run-goal | gsd | steer | workflows | workflow-create | workflow-update | workflow-delete | teams | team-create | team-update | team-delete | agents | agent-create | agent-update | agent-delete | runs | run-status | run-abort" }),
+  action: Type.String({ description: "gsd | run | run-workflow | run-goal | steer | workflows | workflow-create | workflow-update | workflow-delete | teams | team-create | team-update | team-delete | agents | agent-create | agent-update | agent-delete | runs | run-status | run-abort" }),
   agent: Type.Optional(Type.String({ description: "Agent name or 'auto' for policy-driven selection." })),
   task: Type.Optional(Type.String({ description: "Prompt / task for the agent." })),
   description: Type.Optional(Type.String({ description: "Short 3-5 word summary shown in UI." })),
@@ -46,6 +46,8 @@ export default function (pi: ExtensionAPI) {
       if (n && dr) return renderCompletionNotification(n, dr, theme, opts?.expanded);
       if (dr?.phaseResults) return renderWorkflowWidget(dr, theme);
       if (dr?.turns) return renderGoalWidget(dr, theme);
+      const gsd = toolResult?.details?.gsd;
+      if (gsd?.phases) return renderGSDWidget(gsd, theme);
       return renderSubagentResult(toolResult, opts, theme);
     },
     async execute(_toolCallId, params, signal, onUpdate, ctx) {
