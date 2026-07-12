@@ -14,7 +14,7 @@ import { getResultSummaryText } from "./execution/progress.js";
 import { type SubagentDetails, type SubagentResult } from "./execution/types.ts";
 import { emptyUsage, isResultError } from "./execution/result-utils.ts";
 import { renderSubagentCall, renderSubagentResult } from "./rendering/render.ts";
-import { renderGoalWidget, renderWorkflowWidget } from "./rendering/widgets.ts";
+import { renderCompletionNotification, renderGoalWidget, renderWorkflowWidget } from "./rendering/widgets.ts";
 import { resolveSettings } from "./settings/settings.ts";
 import { listRuns, getRun } from "./runs/persistence.ts";
 import { createTeam, removeTeam, updateTeam } from "./teams/manager.ts";
@@ -53,6 +53,13 @@ export default function (pi: ExtensionAPI) {
     renderCall: renderSubagentCall,
     renderResult: (toolResult: any, opts: any, theme: any) => {
       const detailRun = toolResult?.details?.run;
+      const notification = toolResult?.details?.notification;
+
+      // Completion notification: compact box, expandable to full widget
+      if (notification && detailRun) {
+        return renderCompletionNotification(notification, detailRun, theme, opts?.expanded);
+      }
+
       if (detailRun?.phaseResults) return renderWorkflowWidget(detailRun, theme);
       if (detailRun?.turns) return renderGoalWidget(detailRun, theme);
       return renderSubagentResult(toolResult, opts, theme);
@@ -111,7 +118,7 @@ export default function (pi: ExtensionAPI) {
         if (params.background) {
           const { runId, error } = startBackgroundRun(cwd, params.workflowId!, { dryRun: params.dryRun });
           if (error) return { content: [{ type: "text" as const, text: error }], details: {}, isError: true };
-          return { content: [{ type: "text" as const, text: `Workflow "${wf.name}" started in background.\nRun ID: ${runId}` }], details: { runId } };
+          return { content: [{ type: "text" as const, text: `Workflow "${wf.name}" started in background.\nRun ID: ${runId}` }], details: { runId, notification: { runId, workflowName: wf.name, status: "running" } } };
         }
         const run = await runWorkflow({ cwd, workflow: wf, agents: discovery.agents, settings, signal, dryRun: params.dryRun });
         return { content: [{ type: "text" as const, text: `Workflow: ${run.workflowName} — ${run.status}` }], details: { run } };
@@ -234,12 +241,20 @@ export default function (pi: ExtensionAPI) {
         if (!params.runId) return { content: [{ type: "text" as const, text: "run-status requires runId." }], details: {}, isError: true };
         const run = getRun(cwd, params.runId!);
         if (!run) return { content: [{ type: "text" as const, text: "Run not found." }], details: {} };
-        const lines = [`Run: ${run.id}`, `Workflow: ${run.workflowName}`, `Status: ${run.status}`, run.completedAt ? `Completed: ${run.completedAt}` : "", run.error ? `Error: ${run.error}` : "", "Phases:"];
-        for (const p of run.phaseResults) {
-          lines.push(`  ${p.status} ${p.phaseName}:`);
-          for (const t of p.taskResults) lines.push(`    ${t.status === "completed" ? "\u2713" : "\u00d7"} ${t.agent}: ${t.response?.slice(0, 100) || t.errorMessage || ""}`);
-        }
-        return { content: [{ type: "text" as const, text: lines.filter(Boolean).join("\n") }], details: {} };
+
+        const taskCount = run.phaseResults.reduce((s: number, p: any) => s + p.taskResults.length, 0);
+        const firstResponse = run.phaseResults[0]?.taskResults[0]?.response || "";
+
+        const notification = {
+          runId: run.id,
+          workflowName: run.workflowName,
+          status: run.status,
+          phaseCount: run.phaseResults.length,
+          taskCount,
+          preview: firstResponse.slice(0, 100),
+        };
+
+        return { content: [{ type: "text" as const, text: `${run.workflowName} — ${run.status}` }], details: { run, notification } };
       }
       if (a === "run-abort") {
         if (!params.runId) return { content: [{ type: "text" as const, text: "run-abort requires runId." }], details: {}, isError: true };
