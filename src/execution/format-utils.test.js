@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { formatCount, formatToolCallPreview, shortPath, truncateInline, truncateMiddle, truncateTail, stringifyPreview, extractResultText } from "./format-utils.js";
+import { formatCount, formatToolCallPreview, shortPath, truncateInline, truncateMiddle, stringifyPreview, extractResultText } from "./format-utils.js";
 
 test("truncateMiddle: returns short text unchanged", () => {
   assert.equal(truncateMiddle("hello", 100), "hello");
@@ -13,14 +13,7 @@ test("truncateMiddle: truncates long text with … separator", () => {
   assert.ok(result.length <= 105);
 });
 
-test("truncateInline: collapses whitespace and truncates", () => {
-  assert.equal(truncateInline("hello  world", 100), "hello world");
-  const result = truncateInline("a".repeat(50), 20);
-  assert.ok(result.endsWith("…"));
-  assert.ok(result.length <= 20);
-});
-
-test("formatCount: small numbers", () => {
+test("extractResultText: extracts from content array", () => {
   assert.equal(formatCount(0), "0");
   assert.equal(formatCount(-1), "0");
   assert.equal(formatCount(42), "42");

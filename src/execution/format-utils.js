@@ -1,7 +1,6 @@
 /**
- * Pure formatting utilities — extracted from runner-events.js.
- * No dependencies on other modules.
- * v0.9.8 L4: lossless-by-default thresholds sized from measured data.
+ * Utility formatters — tool preview, text extraction, token counts.
+ * Text truncation uses Pi's built-in truncateHead/truncateTail/truncateLine API.
  */
 
 export const MAX_TOOL_PREVIEW_CHARS = 8000;
@@ -14,11 +13,6 @@ export function truncateMiddle(text, maxChars) {
   const head = Math.ceil(keep / 2);
   const tail = Math.floor(keep / 2);
   return `${text.slice(0, head)}\n…\n${text.slice(text.length - tail)}`;
-}
-
-export function truncateTail(text, maxChars) {
-  if (typeof text !== "string" || text.length <= maxChars) return text;
-  return `…\n${text.slice(text.length - maxChars)}`;
 }
 
 export function truncateInline(text, maxChars) {
