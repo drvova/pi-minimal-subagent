@@ -1,0 +1,38 @@
+{
+  "id": "wf-mrh43p51-dlz3k4",
+  "name": "Code Review Pipeline",
+  "description": "Multi-phase code review with parallel scanning",
+  "phases": [
+    {
+      "id": "scan",
+      "name": "Security Scan",
+      "concurrency": 2,
+      "tasks": [
+        {
+          "id": "sec1",
+          "agent": "scout",
+          "task": "Scan for security vulnerabilities"
+        },
+        {
+          "id": "sec2",
+          "agent": "scout",
+          "task": "Check for exposed secrets"
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "name": "Code Review",
+      "concurrency": 1,
+      "tasks": [
+        {
+          "id": "rev1",
+          "agent": "scout",
+          "task": "Review code quality and patterns"
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-07-12T01:25:49.189Z",
+  "updatedAt": "2026-07-12T01:25:49.190Z"
+}

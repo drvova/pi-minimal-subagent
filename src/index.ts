@@ -13,6 +13,7 @@ import { getResultSummaryText } from "./execution/progress.js";
 import { type SubagentDetails, type SubagentResult } from "./execution/types.ts";
 import { emptyUsage, isResultError } from "./execution/result-utils.ts";
 import { renderSubagentCall, renderSubagentResult } from "./rendering/render.ts";
+import { renderGoalWidget, renderWorkflowWidget } from "./rendering/widgets.ts";
 import { resolveSettings } from "./settings/settings.ts";
 import { listRuns, getRun } from "./runs/persistence.ts";
 import { createTeam, removeTeam, updateTeam } from "./teams/manager.ts";
@@ -49,7 +50,12 @@ export default function (pi: ExtensionAPI) {
     description: "Unified subagent tool. Run agents, workflows, goal loops. Manage agents, teams, workflows. Check run status. Use action parameter to select operation.",
     parameters: Params,
     renderCall: renderSubagentCall,
-    renderResult: renderSubagentResult,
+    renderResult: (toolResult: any, opts: any, theme: any) => {
+      const detailRun = toolResult?.details?.run;
+      if (detailRun?.phaseResults) return renderWorkflowWidget(detailRun, theme);
+      if (detailRun?.turns) return renderGoalWidget(detailRun, theme);
+      return renderSubagentResult(toolResult, opts, theme);
+    },
 
     async execute(_toolCallId, params, signal, onUpdate, ctx) {
       const cwd = ctx.cwd;
@@ -95,16 +101,10 @@ export default function (pi: ExtensionAPI) {
         if (params.background) {
           const { runId, error } = startBackgroundRun(cwd, params.workflowId!, { dryRun: params.dryRun });
           if (error) return { content: [{ type: "text" as const, text: error }], details: {}, isError: true };
-          return { content: [{ type: "text" as const, text: `Workflow "${wf.name}" started in background.\nRun ID: ${runId}` }], details: {} };
+          return { content: [{ type: "text" as const, text: `Workflow "${wf.name}" started in background.\nRun ID: ${runId}` }], details: { runId } };
         }
         const run = await runWorkflow({ cwd, workflow: wf, agents: discovery.agents, settings, signal, dryRun: params.dryRun });
-        const lines = [`Workflow: ${run.workflowName}`, `Status: ${run.status}`, run.completedAt ? `Completed: ${run.completedAt}` : "", "Phases:"];
-        for (const p of run.phaseResults) {
-          lines.push(`  ${p.status} ${p.phaseName}:`);
-          for (const t of p.taskResults) lines.push(`    ${t.status === "completed" ? "\u2713" : t.status === "failed" ? "\u00d7" : "\u2026"} ${t.agent}: ${t.response?.slice(0, 120) || t.errorMessage || "(no output)"}`);
-        }
-        if (run.error) lines.push(`\nError: ${run.error}`);
-        return { content: [{ type: "text" as const, text: lines.filter(Boolean).join("\n") }], details: {} };
+        return { content: [{ type: "text" as const, text: `Workflow: ${run.workflowName} — ${run.status}` }], details: { run } };
       }
 
       // ─── run-goal ────────────────────────────────────────────
@@ -119,7 +119,7 @@ export default function (pi: ExtensionAPI) {
         const gr = await runGoalLoop({ cwd, config: { team: params.team || "default", goal: params.goal!, workerAgent: params.workerAgent!, judgeAgent: params.judgeAgent!, maxTurns: params.maxTurns || 5, budget: params.budget }, workerAgent: worker, judgeAgent: judge, settings, signal, dryRun: params.dryRun });
         const lines = [`Goal: ${gr.goal}`, `Status: ${gr.status}`, `Turns: ${gr.turns.length}/${gr.maxTurns}`, `Cost: $${gr.totalCost.toFixed(4)}`, gr.completedAt ? `Completed: ${gr.completedAt}` : "", "", "Turns:"];
         for (const t of gr.turns) { lines.push(`  Turn ${t.turnNumber}: ${t.judgeVerdict}`); lines.push(`    Judge: ${t.judgeReason}`); }
-        return { content: [{ type: "text" as const, text: lines.filter(Boolean).join("\n") }], details: {} };
+        return { content: [{ type: "text" as const, text: `Goal: ${gr.goal} — ${gr.status}` }], details: { run: gr } };
       }
 
       // ─── workflows ───────────────────────────────────────────
