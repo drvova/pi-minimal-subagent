@@ -7,13 +7,6 @@ import type { BackgroundRun, RunStatus } from "../runs/types.ts";
 
 const backgroundRuns = new Map<string, { run: Promise<unknown>; abort: AbortController }>();
 
-export interface BackgroundRunResult {
-  runId: string;
-  status: RunStatus;
-  completedAt?: string;
-  error?: string;
-}
-
 export function startBackgroundRun(cwd: string, workflowId: string, opts?: { dryRun?: boolean }): { runId: string; error?: string } {
   const workflow = getWorkflow(cwd, workflowId);
   if (!workflow) return { runId: "", error: `Workflow "${workflowId}" not found` };
@@ -41,6 +34,7 @@ export function startBackgroundRun(cwd: string, workflowId: string, opts?: { dry
     settings,
     signal: abort.signal,
     dryRun: opts?.dryRun,
+    runId,
   });
 
   backgroundRuns.set(runId, { run: runPromise, abort });
@@ -61,14 +55,4 @@ export function abortBackgroundRun(runId: string): boolean {
   entry.abort.abort();
   updateBgRunStatus(runId, "aborted");
   return true;
-}
-
-export function getBackgroundRunStatus(runId: string): BackgroundRunResult | null {
-  const bg = backgroundRuns.get(runId);
-  if (!bg) return null;
-  // Status is tracked by the background runner; check if resolved
-  return {
-    runId,
-    status: "running", // Will be updated by the promise handler
-  };
 }

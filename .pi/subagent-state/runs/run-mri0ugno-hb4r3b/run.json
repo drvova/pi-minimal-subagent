@@ -1,0 +1,55 @@
+{
+  "id": "run-mri0ugno-hb4r3b",
+  "workflowId": "wf-mrh43p51-dlz3k4",
+  "workflowName": "Code Review Pipeline",
+  "status": "completed",
+  "phaseResults": [
+    {
+      "phaseId": "scan",
+      "phaseName": "Security Scan",
+      "status": "completed",
+      "startedAt": "2026-07-12T16:42:25.621Z",
+      "taskResults": [
+        {
+          "taskId": "sec1",
+          "agent": "scout",
+          "task": "Scan for security vulnerabilities",
+          "status": "completed",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T16:42:25.621Z",
+          "response": "[DRY RUN] Would execute: agent=scout, task=\"Scan for security vulnerabilities\""
+        },
+        {
+          "taskId": "sec2",
+          "agent": "scout",
+          "task": "Check for exposed secrets",
+          "status": "completed",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T16:42:25.621Z",
+          "response": "[DRY RUN] Would execute: agent=scout, task=\"Check for exposed secrets\""
+        }
+      ],
+      "completedAt": "2026-07-12T16:42:25.621Z"
+    },
+    {
+      "phaseId": "review",
+      "phaseName": "Code Review",
+      "status": "completed",
+      "startedAt": "2026-07-12T16:42:25.621Z",
+      "taskResults": [
+        {
+          "taskId": "rev1",
+          "agent": "scout",
+          "task": "Review code quality and patterns",
+          "status": "completed",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T16:42:25.621Z",
+          "response": "[DRY RUN] Would execute: agent=scout, task=\"Review code quality and patterns\""
+        }
+      ],
+      "completedAt": "2026-07-12T16:42:25.621Z"
+    }
+  ],
+  "startedAt": "2026-07-12T16:42:25.620Z",
+  "completedAt": "2026-07-12T16:42:25.621Z"
+}

@@ -17,15 +17,17 @@ export interface EngineOptions {
   onPhaseComplete?: (phaseId: string) => void;
   onTaskComplete?: (taskId: string) => void;
   dryRun?: boolean;
+  /** Pre-generated run ID (e.g. from startBackgroundRun) — single source of truth. */
+  runId?: string;
 }
 
 function generateRunId(): string {
   return `run-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function createRun(workflow: WorkflowDefinition): WorkflowRun {
+function createRun(workflow: WorkflowDefinition, runId?: string): WorkflowRun {
   return {
-    id: generateRunId(),
+    id: runId ?? generateRunId(),
     workflowId: workflow.id,
     workflowName: workflow.name,
     status: "pending",
@@ -45,7 +47,7 @@ function createRun(workflow: WorkflowDefinition): WorkflowRun {
 
 export async function runWorkflow(opts: EngineOptions): Promise<WorkflowRun> {
   const { cwd, workflow, agents, settings, signal, dryRun } = opts;
-  const run = createRun(workflow);
+  const run = createRun(workflow, opts.runId);
   run.status = "running";
   saveRun(cwd, run);
   emitWorkflowStarted(workflow.id, workflow.name, workflow.phases.length, cwd);
