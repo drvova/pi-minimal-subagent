@@ -1,12 +1,37 @@
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { getAgentDir, parseFrontmatter } from "@mariozechner/pi-coding-agent";
-import { resolveConfiguredPath } from "./settings.ts";
-import type { AgentConfig, AgentSource } from "./types.ts";
+
+export type AgentSource = "user" | "project";
+
+export interface AgentConfig {
+  name: string;
+  description: string;
+  systemPrompt: string;
+  source: AgentSource;
+  filePath: string;
+  model?: string;
+  extensions?: string[];
+  skills?: string[];
+  thinking?: string;
+}
 
 export interface AgentDiscoveryResult {
   agents: AgentConfig[];
   projectAgentsDir: string | null;
+}
+
+function isPackageSource(value: string): boolean {
+  return value.startsWith("npm:") || value.startsWith("git:");
+}
+
+export function resolveConfiguredPath(value: string, baseDir: string): string {
+  if (!value) return value;
+  if (isPackageSource(value)) return value;
+  if (value.startsWith("~/")) return path.join(os.homedir(), value.slice(2));
+  if (path.isAbsolute(value)) return value;
+  return path.resolve(baseDir, value);
 }
 
 function parseList(value: unknown, baseDir: string, resolvePaths = false): string[] | undefined {
@@ -72,7 +97,7 @@ function loadAgentsFromDir(dir: string, source: AgentSource): AgentConfig[] {
       filePath,
       model: firstString(frontmatter.model),
       extensions: parseList(frontmatter.extensions, path.dirname(filePath), true),
-      skills: parseList(frontmatter.skills, path.dirname(filePath), true),
+      skills: parseList(frontmatter.skills, path.dirname(filePath), false),
       thinking: firstString(frontmatter.thinking),
     });
   }

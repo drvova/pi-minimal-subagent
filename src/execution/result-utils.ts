@@ -1,107 +1,11 @@
 import type { Message } from "@mariozechner/pi-ai";
-import { getFinalAssistantText } from "./runner-events.js";
+import { getFinalAssistantText } from "./progress.js";
+import type { SubagentResult, ToolExecution } from "./types.ts";
 
-export type AgentSource = "user" | "project";
-
-export interface AgentConfig {
-  name: string;
-  description: string;
-  systemPrompt: string;
-  source: AgentSource;
-  filePath: string;
-  model?: string;
-  extensions?: string[];
-  skills?: string[];
-  thinking?: string;
-}
-
-export interface Settings {
-  model: string | null;
-  extensions: string[] | null;
-  environment: Record<string, string>;
-}
-
-export interface UsageStats {
-  input: number;
-  output: number;
-  cacheRead: number;
-  cacheWrite: number;
-  cost: number;
-  contextTokens: number;
-  turns: number;
-}
-
-export interface ToolExecution {
-  toolCallId: string;
-  toolName: string;
-  status: "running" | "completed" | "error";
-  updates: number;
-  argsPreview?: string;
-  displayText?: string;
-  latestText?: string;
-  isError?: boolean;
-  activityOrder?: number;
-}
-
-export interface ThinkingState {
-  status: "running" | "completed";
-  chars: number;
-  activityOrder?: number;
-}
-
-export interface ToolActivity extends ToolExecution {
-  type: "tool";
-  activityOrder: number;
-}
-
-export interface ThinkingActivity extends ThinkingState {
-  type: "thinking";
-  activityOrder: number;
-}
-
-export type Activity = ToolActivity | ThinkingActivity;
-
-export interface SubagentResult {
-  agent: string;
-  agentSource: AgentSource | "unknown";
-  agentFile?: string;
-  task: string;
-  exitCode: number;
-  messages: Message[];
-  response: string;
-  stderr: string;
-  usage: UsageStats;
-  provider?: string;
-  model?: string;
-  stopReason?: string;
-  errorMessage?: string;
-  sawAgentEnd?: boolean;
-  thinking?: ThinkingState;
-  activityCount?: number;
-  activities?: Activity[];
-  toolExecutionCount?: number;
-  toolExecutions?: ToolExecution[];
-  artifactDir?: string;
-  stdoutArtifact?: string;
-  stderrArtifact?: string;
-  stdoutTail?: string[];
-}
-
-export interface SubagentDetails {
-  results: SubagentResult[];
-  availableAgents?: string[];
-  projectAgentsDir?: string | null;
-}
-
-export function emptyUsage(): UsageStats {
+export function emptyUsage() {
   return {
-    input: 0,
-    output: 0,
-    cacheRead: 0,
-    cacheWrite: 0,
-    cost: 0,
-    contextTokens: 0,
-    turns: 0,
+    input: 0, output: 0, cacheRead: 0, cacheWrite: 0,
+    cost: 0, contextTokens: 0, turns: 0,
   };
 }
 
@@ -134,13 +38,11 @@ function latestFailedTool(result: SubagentResult): ToolExecution | undefined {
     const activity = activities[i];
     if (activity?.type === "tool" && (activity.status === "error" || activity.isError)) return activity;
   }
-
   const tools = Array.isArray(result.toolExecutions) ? result.toolExecutions : [];
   for (let i = tools.length - 1; i >= 0; i--) {
     const tool = tools[i];
     if (tool?.status === "error" || tool?.isError) return tool;
   }
-
   return undefined;
 }
 
@@ -154,17 +56,14 @@ function formatArtifactSummary(result: SubagentResult): string {
 function normalizeAgentEndToolFailure(result: SubagentResult): void {
   if (!result.sawAgentEnd || hasSemanticCompletion(result)) return;
   if (result.stopReason !== "error" && !result.errorMessage) return;
-
   const tool = latestFailedTool(result);
   if (!tool) return;
-
   const transportError = result.errorMessage?.trim();
   if (transportError && !result.stderr.includes(transportError)) {
     result.stderr = result.stderr.trim()
       ? `${result.stderr.trim()}\nTransport error: ${transportError}`
       : `Transport error: ${transportError}`;
   }
-
   const toolLabel = tool.displayText || tool.toolName || "tool";
   const toolOutput = tool.latestText?.trim();
   const artifacts = formatArtifactSummary(result);
@@ -178,7 +77,6 @@ export function normalizeCompletedResult(
   wasAborted: boolean,
 ): SubagentResult {
   const semanticSuccess = hasSemanticCompletion(result);
-
   normalizeAgentEndToolFailure(result);
 
   if (wasAborted) {
@@ -208,7 +106,6 @@ export function normalizeCompletedResult(
       }
     }
   }
-
   result.response = getFinalOutput(result.messages);
   return result;
 }

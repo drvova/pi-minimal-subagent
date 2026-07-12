@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { emptyUsage, normalizeCompletedResult } from "./types.ts";
+import { emptyUsage, normalizeCompletedResult } from "./result-utils.ts";
 
 function baseResult(overrides = {}) {
   return {
