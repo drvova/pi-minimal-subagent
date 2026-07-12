@@ -111,7 +111,7 @@ export async function handleWorkflowRun(params: any, cwd: string, signal: any): 
     return { content: [{ type: "text", text: `Workflow "${wf.name}" started in background.\nRun ID: ${runId}` }], details: { runId, notification: { runId, workflowName: wf.name, status: "running" } } };
   }
   const run = await runWorkflow({ cwd, workflow: wf, agents: discovery.agents, settings, signal, dryRun: params.dryRun });
-  return { content: [{ type: "text", text: `Workflow: ${run.workflowName} — ${run.status}` }], details: { run } };
+  return { content: [{ type: "text", text: `Workflow: ${run.workflowName} — ${run.status} (${run.id})` }], details: { run } };
 }
 
 export async function handleGoalRun(params: any, cwd: string, signal: any): Promise<ToolResult> {

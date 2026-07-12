@@ -1,0 +1,21 @@
+{
+  "id": "wf-mri1ns3b-u5v2bo",
+  "name": "Auto Probe",
+  "description": "zero-config auto in workflow",
+  "phases": [
+    {
+      "id": "p1",
+      "name": "P1",
+      "concurrency": 1,
+      "tasks": [
+        {
+          "id": "t1",
+          "agent": "auto",
+          "task": "Reconnaissance: reply with exactly AUTO-WF-OK"
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-07-12T17:05:13.463Z",
+  "updatedAt": "2026-07-12T17:05:13.464Z"
+}

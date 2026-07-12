@@ -54,7 +54,7 @@ function validatePhase(phase: WorkflowPhase, index: number, taskIds: Set<string>
     errors.push(err(`${prefix}.name`, "Phase name is required"));
   }
 
-  const concurrency = Number(phase.concurrency);
+  const concurrency = phase.concurrency === undefined ? 1 : Number(phase.concurrency);
   if (!Number.isFinite(concurrency) || concurrency < 1) {
     errors.push(err(`${prefix}.concurrency`, "Concurrency must be at least 1"));
   }

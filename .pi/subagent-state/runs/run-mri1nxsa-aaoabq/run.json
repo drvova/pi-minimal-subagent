@@ -1,0 +1,35 @@
+{
+  "id": "run-mri1nxsa-aaoabq",
+  "workflowId": "wf-mri1ns3b-u5v2bo",
+  "workflowName": "Auto Probe",
+  "status": "completed",
+  "phaseResults": [
+    {
+      "phaseId": "p1",
+      "phaseName": "P1",
+      "status": "completed",
+      "startedAt": "2026-07-12T17:05:20.843Z",
+      "taskResults": [
+        {
+          "taskId": "t1",
+          "agent": "auto",
+          "task": "Reconnaissance: reply with exactly AUTO-WF-OK",
+          "status": "completed",
+          "startedAt": "2026-07-12T17:05:20.843Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T17:05:42.835Z",
+          "response": "AUTO-WF-OK",
+          "usage": {
+            "input": 10,
+            "output": 160,
+            "cost": 0.076425,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-12T17:05:42.836Z"
+    }
+  ],
+  "startedAt": "2026-07-12T17:05:20.842Z",
+  "completedAt": "2026-07-12T17:05:42.837Z"
+}

@@ -19,23 +19,19 @@ export function handleRunList(cwd: string): ToolResult {
 export async function handleRunStatus(params: any, cwd: string): Promise<ToolResult> {
   const agentId = params.agent_id || params.runId;
   if (!agentId) return err("run-status requires runId or agent_id.");
+  let run = getRun(cwd, agentId!);
   if (params.wait) {
-    let run: any = null;
-    for (let i = 0; i < 120; i++) {
-      run = getRun(cwd, agentId!);
-      if (!run || run.status === "completed" || run.status === "failed" || run.status === "aborted") break;
+    for (let i = 0; i < 120 && run && run.status !== "completed" && run.status !== "failed" && run.status !== "aborted"; i++) {
       await new Promise(r => setTimeout(r, 1000));
+      run = getRun(cwd, agentId!);
     }
-    if (!run) return { content: [{ type: "text", text: "Run not found." }], details: {} };
-    const lines = [`Workflow: ${run.workflowName}`, `Status: ${run.status}`, run.completedAt ? `Completed: ${run.completedAt}` : ""];
-    if (params.verbose) for (const p of run.phaseResults) { lines.push(`  ${p.phaseName}:`); for (const t of p.taskResults) lines.push(`    ${t.status} ${t.agent}: ${t.response || t.errorMessage || ""}`); }
-    return { content: [{ type: "text", text: lines.filter(Boolean).join("\n") }], details: { run } };
   }
-  const run = getRun(cwd, agentId!);
   if (!run) return { content: [{ type: "text", text: "Run not found." }], details: {} };
+  const lines = [`Workflow: ${run.workflowName}`, `Status: ${run.status}`, run.completedAt ? `Completed: ${run.completedAt}` : ""];
+  if (params.verbose) for (const p of run.phaseResults) { lines.push(`  ${p.phaseName}:`); for (const t of p.taskResults) lines.push(`    ${t.status} ${t.agent}: ${t.response || t.errorMessage || ""}`); }
   const taskCount = run.phaseResults.reduce((s: number, p: any) => s + p.taskResults.length, 0);
   const notification = { runId: run.id, workflowName: run.workflowName, status: run.status, phaseCount: run.phaseResults.length, taskCount, preview: (run.phaseResults[0]?.taskResults[0]?.response || "").slice(0, 100) };
-  return { content: [{ type: "text", text: `${run.workflowName} — ${run.status}` }], details: { run, notification } };
+  return { content: [{ type: "text", text: lines.filter(Boolean).join("\n") }], details: { run, notification } };
 }
 
 export function handleRunAbort(params: any): ToolResult {

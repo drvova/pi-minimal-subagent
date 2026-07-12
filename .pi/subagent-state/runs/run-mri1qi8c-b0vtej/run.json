@@ -1,0 +1,28 @@
+{
+  "id": "run-mri1qi8c-b0vtej",
+  "workflowId": "wf-mri1qi84-m3pyhj",
+  "workflowName": "NoConc",
+  "status": "completed",
+  "phaseResults": [
+    {
+      "phaseId": "p1",
+      "phaseName": "P1",
+      "status": "completed",
+      "startedAt": "2026-07-12T17:07:20.654Z",
+      "taskResults": [
+        {
+          "taskId": "t1",
+          "agent": "scout",
+          "task": "x",
+          "status": "completed",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T17:07:20.654Z",
+          "response": "[DRY RUN] Would execute: agent=scout, task=\"x\""
+        }
+      ],
+      "completedAt": "2026-07-12T17:07:20.654Z"
+    }
+  ],
+  "startedAt": "2026-07-12T17:07:20.652Z",
+  "completedAt": "2026-07-12T17:07:20.654Z"
+}

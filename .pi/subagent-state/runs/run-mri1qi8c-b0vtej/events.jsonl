@@ -1,0 +1,4 @@
+{"timestamp":"2026-07-12T17:07:20.653Z","type":"run_started","runId":"run-mri1qi8c-b0vtej","message":"Workflow \"NoConc\" started (1 phases)"}
+{"timestamp":"2026-07-12T17:07:20.654Z","type":"phase_started","runId":"run-mri1qi8c-b0vtej","phaseId":"p1","message":"Phase \"P1\" started with 1 tasks"}
+{"timestamp":"2026-07-12T17:07:20.654Z","type":"phase_completed","runId":"run-mri1qi8c-b0vtej","phaseId":"p1","message":"Phase \"P1\" completed"}
+{"timestamp":"2026-07-12T17:07:20.655Z","type":"run_completed","runId":"run-mri1qi8c-b0vtej","message":"Workflow \"NoConc\" completed successfully"}
