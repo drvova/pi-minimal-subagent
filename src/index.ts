@@ -47,13 +47,28 @@ function anySignal(signals: AbortSignal[]): AbortSignal {
 
 const Params = Type.Object({
   action: Type.String({ description: "run | run-workflow | run-goal | steer | workflows | workflow-create | workflow-update | workflow-delete | teams | team-create | team-update | team-delete | agents | agent-create | agent-update | agent-delete | runs | run-status | run-abort" }),
-  agent: Type.Optional(Type.String({})), task: Type.Optional(Type.String({})),
-  workflowId: Type.Optional(Type.String({})), dryRun: Type.Optional(Type.Boolean({})), background: Type.Optional(Type.Boolean({})),
-  goal: Type.Optional(Type.String({})), workerAgent: Type.Optional(Type.String({})), judgeAgent: Type.Optional(Type.String({})), maxTurns: Type.Optional(Type.Number({ description: "Max turns (0 = unlimited)." })), budget: Type.Optional(Type.Number({})),
-  id: Type.Optional(Type.String({})), name: Type.Optional(Type.String({})), description: Type.Optional(Type.String({})), systemPrompt: Type.Optional(Type.String({})), model: Type.Optional(Type.String({})),
-  skills: Type.Optional(Type.String({})), extensions: Type.Optional(Type.String({})), thinking: Type.Optional(Type.String({})),
-  phases: Type.Optional(Type.String({})), team: Type.Optional(Type.String({})), members: Type.Optional(Type.String({})),
-  runId: Type.Optional(Type.String({})),
+  agent: Type.Optional(Type.String({ description: "Agent name or 'auto' for policy-driven selection." })),
+  task: Type.Optional(Type.String({ description: "Prompt / task for the agent." })),
+  description: Type.Optional(Type.String({ description: "Short 3-5 word summary shown in UI." })),
+  model: Type.Optional(Type.String({ description: "Model override — provider/modelId or fuzzy name." })),
+  thinking: Type.Optional(Type.String({ description: "Thinking level: off, minimal, low, medium, high, xhigh." })),
+  maxTurns: Type.Optional(Type.Number({ description: "Max agentic turns. Omit or 0 for unlimited (default)." })),
+  run_in_background: Type.Optional(Type.Boolean({ description: "Run without blocking. Use run-status to check." })),
+  background: Type.Optional(Type.Boolean({})),
+  resume: Type.Optional(Type.String({ description: "Agent ID to resume a previous session." })),
+  inherit_context: Type.Optional(Type.Boolean({ description: "Fork parent conversation context into agent." })),
+  workflowId: Type.Optional(Type.String({})),
+  dryRun: Type.Optional(Type.Boolean({ description: "Scaffold phases without spawning real Pi processes." })),
+  goal: Type.Optional(Type.String({})), workerAgent: Type.Optional(Type.String({})), judgeAgent: Type.Optional(Type.String({})), budget: Type.Optional(Type.Number({})),
+  id: Type.Optional(Type.String({})), name: Type.Optional(Type.String({})), systemPrompt: Type.Optional(Type.String({})),
+  skills: Type.Optional(Type.String({ description: "Comma-separated skill names." })),
+  extensions: Type.Optional(Type.String({ description: "Comma-separated extension refs." })),
+  phases: Type.Optional(Type.String({ description: "JSON array of phases." })),
+  team: Type.Optional(Type.String({})), members: Type.Optional(Type.String({ description: "JSON array of {agent, role} objects." })),
+  runId: Type.Optional(Type.String({ description: "Run/agent ID for status checks." })),
+  agent_id: Type.Optional(Type.String({ description: "Alias for runId — agent ID to check." })),
+  wait: Type.Optional(Type.Boolean({ description: "Wait for completion (run-status)." })),
+  verbose: Type.Optional(Type.Boolean({ description: "Include full conversation log (run-status)." })),
 });
 
 export default function (pi: ExtensionAPI) {
@@ -135,7 +150,7 @@ export default function (pi: ExtensionAPI) {
         const wfs = listWorkflows(cwd);
         const wf = wfs.find((w) => w.id === params.workflowId);
         if (!wf) return { content: [{ type: "text" as const, text: `Workflow "${params.workflowId}" not found.` }], details: {} };
-        if (params.background) {
+        if (params.background || params.run_in_background) {
           const { runId, error } = startBackgroundRun(cwd, params.workflowId!, { dryRun: params.dryRun });
           if (error) return { content: [{ type: "text" as const, text: error }], details: {}, isError: true };
           return { content: [{ type: "text" as const, text: `Workflow "${wf.name}" started in background.\nRun ID: ${runId}` }], details: { runId, notification: { runId, workflowName: wf.name, status: "running" } } };
@@ -266,8 +281,29 @@ export default function (pi: ExtensionAPI) {
         return { content: [{ type: "text" as const, text: runs.map((r) => `${r.status === "completed" ? "\u2713" : r.status === "running" ? "\u2026" : "\u00d7"} ${r.workflowName} (${r.runId})\n  ${r.phaseCount} phases, ${r.taskCount} tasks | ${r.startedAt}`).join("\n\n") }], details: {} };
       }
       if (a === "run-status") {
-        if (!params.runId) return { content: [{ type: "text" as const, text: "run-status requires runId." }], details: {}, isError: true };
-        const run = getRun(cwd, params.runId!);
+        const agentId = params.agent_id || params.runId;
+        if (!agentId) return { content: [{ type: "text" as const, text: "run-status requires runId or agent_id." }], details: {}, isError: true };
+
+        // Wait for completion if requested
+        if (params.wait) {
+          let run: any = null;
+          for (let i = 0; i < 120; i++) {
+            run = getRun(cwd, agentId!);
+            if (!run || run.status === "completed" || run.status === "failed" || run.status === "aborted") break;
+            await new Promise(r => setTimeout(r, 1000));
+          }
+          if (!run) return { content: [{ type: "text" as const, text: "Run not found." }], details: {} };
+          const lines = [`Workflow: ${run.workflowName}`, `Status: ${run.status}`, run.completedAt ? `Completed: ${run.completedAt}` : ""];
+          if (params.verbose) {
+            for (const p of run.phaseResults) {
+              lines.push(`  ${p.phaseName}:`);
+              for (const t of p.taskResults) lines.push(`    ${t.status} ${t.agent}: ${t.response || t.errorMessage || ""}`);
+            }
+          }
+          return { content: [{ type: "text" as const, text: lines.filter(Boolean).join("\n") }], details: { run } };
+        }
+
+        const run = getRun(cwd, agentId!);
         if (!run) return { content: [{ type: "text" as const, text: "Run not found." }], details: {} };
 
         const taskCount = run.phaseResults.reduce((s: number, p: any) => s + p.taskResults.length, 0);
@@ -285,8 +321,9 @@ export default function (pi: ExtensionAPI) {
         return { content: [{ type: "text" as const, text: `${run.workflowName} — ${run.status}` }], details: { run, notification } };
       }
       if (a === "run-abort") {
-        if (!params.runId) return { content: [{ type: "text" as const, text: "run-abort requires runId." }], details: {}, isError: true };
-        return { content: [{ type: "text" as const, text: abortBackgroundRun(params.runId!) ? "Abort signal sent." : "Run not found." }], details: {} };
+        const agentId = params.agent_id || params.runId;
+        if (!agentId) return { content: [{ type: "text" as const, text: "run-abort requires runId or agent_id." }], details: {}, isError: true };
+        return { content: [{ type: "text" as const, text: abortBackgroundRun(agentId!) ? "Abort signal sent." : "Run not found." }], details: {} };
       }
 
       return { content: [{ type: "text" as const, text: `Unknown action "${a}". Actions: run, run-workflow, run-goal, workflows, workflow-create/update/delete, teams, team-create/update/delete, agents, agent-create/update/delete, runs, run-status, run-abort.` }], details: {}, isError: true };
