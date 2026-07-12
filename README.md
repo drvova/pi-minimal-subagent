@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/drvova/pi-mcp-deferred/raw/master/pi-logo-animated.svg" width="180" alt="Pi Animated Logo">
+</p>
+
 # pi-minimal-subagent
 
 Unified subagent tool for Pi — run agents, workflows, goal loops with live TUI widgets, event bus, and durable state.
