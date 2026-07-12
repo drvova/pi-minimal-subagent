@@ -49,7 +49,7 @@ const Params = Type.Object({
   action: Type.String({ description: "run | run-workflow | run-goal | steer | workflows | workflow-create | workflow-update | workflow-delete | teams | team-create | team-update | team-delete | agents | agent-create | agent-update | agent-delete | runs | run-status | run-abort" }),
   agent: Type.Optional(Type.String({})), task: Type.Optional(Type.String({})),
   workflowId: Type.Optional(Type.String({})), dryRun: Type.Optional(Type.Boolean({})), background: Type.Optional(Type.Boolean({})),
-  goal: Type.Optional(Type.String({})), workerAgent: Type.Optional(Type.String({})), judgeAgent: Type.Optional(Type.String({})), maxTurns: Type.Optional(Type.Number({})), budget: Type.Optional(Type.Number({})),
+  goal: Type.Optional(Type.String({})), workerAgent: Type.Optional(Type.String({})), judgeAgent: Type.Optional(Type.String({})), maxTurns: Type.Optional(Type.Number({ description: "Max turns (0 = unlimited)." })), budget: Type.Optional(Type.Number({})),
   id: Type.Optional(Type.String({})), name: Type.Optional(Type.String({})), description: Type.Optional(Type.String({})), systemPrompt: Type.Optional(Type.String({})), model: Type.Optional(Type.String({})),
   skills: Type.Optional(Type.String({})), extensions: Type.Optional(Type.String({})), thinking: Type.Optional(Type.String({})),
   phases: Type.Optional(Type.String({})), team: Type.Optional(Type.String({})), members: Type.Optional(Type.String({})),
@@ -161,8 +161,8 @@ export default function (pi: ExtensionAPI) {
         if (!worker) return { content: [{ type: "text" as const, text: `Worker agent "${params.workerAgent}" not found.` }], details: {}, isError: true };
         const judge = discovery.agents.find((x) => x.name === params.judgeAgent);
         if (!judge) return { content: [{ type: "text" as const, text: `Judge agent "${params.judgeAgent}" not found.` }], details: {}, isError: true };
-        const gr = await runGoalLoop({ cwd, config: { team: params.team || "default", goal: params.goal!, workerAgent: params.workerAgent!, judgeAgent: params.judgeAgent!, maxTurns: params.maxTurns || 5, budget: params.budget }, workerAgent: worker, judgeAgent: judge, settings, signal, dryRun: params.dryRun });
-        const lines = [`Goal: ${gr.goal}`, `Status: ${gr.status}`, `Turns: ${gr.turns.length}/${gr.maxTurns}`, `Cost: $${gr.totalCost.toFixed(4)}`, gr.completedAt ? `Completed: ${gr.completedAt}` : "", "", "Turns:"];
+        const gr = await runGoalLoop({ cwd, config: { team: params.team || "default", goal: params.goal!, workerAgent: params.workerAgent!, judgeAgent: params.judgeAgent!, maxTurns: params.maxTurns ?? 0, budget: params.budget }, workerAgent: worker, judgeAgent: judge, settings, signal, dryRun: params.dryRun });
+        const lines = [`Goal: ${gr.goal}`, `Status: ${gr.status}`, `Turns: ${gr.turns.length}${gr.maxTurns > 0 ? `/${gr.maxTurns}` : " (unlimited)"}`, `Cost: $${gr.totalCost.toFixed(4)}`, gr.completedAt ? `Completed: ${gr.completedAt}` : "", "", "Turns:"];
         for (const t of gr.turns) { lines.push(`  Turn ${t.turnNumber}: ${t.judgeVerdict}`); lines.push(`    Judge: ${t.judgeReason}`); }
         return { content: [{ type: "text" as const, text: `Goal: ${gr.goal} — ${gr.status}` }], details: { run: gr } };
       }

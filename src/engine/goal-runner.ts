@@ -33,14 +33,15 @@ export async function runGoalLoop(opts: GoalRunnerOptions): Promise<GoalRun> {
   let previousFeedback = "";
   emitGoalLoopStarted(config.goal, config.workerAgent, config.judgeAgent, config.maxTurns, cwd);
 
-  for (let turnNum = 1; turnNum <= config.maxTurns; turnNum++) {
+  const effectiveMax = config.maxTurns > 0 ? config.maxTurns : Infinity;
+  for (let turnNum = 1; turnNum <= effectiveMax; turnNum++) {
     if (signal?.aborted) { run.status = "aborted"; break; }
 
     const workerTask = buildWorkerPrompt(config.goal, previousFeedback);
     const turn: GoalTurn = {
       turnNumber: turnNum,
       workerPrompt: workerTask,
-      workerTask: `Turn ${turnNum}/${config.maxTurns}`,
+      workerTask: `Turn ${turnNum}${config.maxTurns > 0 ? `/${config.maxTurns}` : ""}`,
       workerResponse: "",
       judgeVerdict: "not_achieved",
       judgeReason: "",
@@ -96,7 +97,7 @@ export async function runGoalLoop(opts: GoalRunnerOptions): Promise<GoalRun> {
     }
   }
 
-  if (run.status === "running" && run.turns.length >= config.maxTurns) {
+  if (run.status === "running" && config.maxTurns > 0 && run.turns.length >= config.maxTurns) {
     run.status = "max_turns";
   }
   run.completedAt = now();
