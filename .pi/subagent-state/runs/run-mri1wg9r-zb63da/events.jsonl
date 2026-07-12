@@ -1,0 +1,12 @@
+{"timestamp":"2026-07-12T17:11:58.049Z","type":"run_started","runId":"run-mri1wg9r-zb63da","message":"Workflow \"Code Review Pipeline\" started (2 phases)"}
+{"timestamp":"2026-07-12T17:11:58.049Z","type":"phase_started","runId":"run-mri1wg9r-zb63da","phaseId":"scan","message":"Phase \"Security Scan\" started with 2 tasks"}
+{"timestamp":"2026-07-12T17:11:58.049Z","type":"task_started","runId":"run-mri1wg9r-zb63da","phaseId":"scan","taskId":"sec1"}
+{"timestamp":"2026-07-12T17:11:58.062Z","type":"task_started","runId":"run-mri1wg9r-zb63da","phaseId":"scan","taskId":"sec2"}
+{"timestamp":"2026-07-12T17:13:21.078Z","type":"task_completed","runId":"run-mri1wg9r-zb63da","phaseId":"scan","taskId":"sec2","message":"**✓ No exposed secrets found**\n\nSummary:\n- No hardcoded API keys, passwords, or tokens in source code\n- No `.env` files in root\n- No AWS credentials, database URLs, or PII patterns\n- Clean git history"}
+{"timestamp":"2026-07-12T17:13:23.355Z","type":"task_completed","runId":"run-mri1wg9r-zb63da","phaseId":"scan","taskId":"sec1","message":"## Security Vulnerability Scan Report\n\n**Status:** 🔴 **6 High-Severity Vulnerabilities + 1 Moderate**\n\n### Critical Findings\n\n| Package | Severity | Vulnerability | CVSS | Fix |\n|---------|----------"}
+{"timestamp":"2026-07-12T17:13:23.355Z","type":"phase_completed","runId":"run-mri1wg9r-zb63da","phaseId":"scan","message":"Phase \"Security Scan\" completed"}
+{"timestamp":"2026-07-12T17:13:23.355Z","type":"phase_started","runId":"run-mri1wg9r-zb63da","phaseId":"review","message":"Phase \"Code Review\" started with 1 tasks"}
+{"timestamp":"2026-07-12T17:13:23.355Z","type":"task_started","runId":"run-mri1wg9r-zb63da","phaseId":"review","taskId":"rev1"}
+{"timestamp":"2026-07-12T17:15:41.952Z","type":"task_completed","runId":"run-mri1wg9r-zb63da","phaseId":"review","taskId":"rev1","message":"---\n\n## Summary\n\n**Comprehensive Review Complete** → saved to `CODE-QUALITY-REVIEW.md`\n\n### Top Findings\n\n| Category | Status | Evidence |\n|----------|--------|----------|\n| **Architecture** | ✅ Good "}
+{"timestamp":"2026-07-12T17:15:41.953Z","type":"phase_completed","runId":"run-mri1wg9r-zb63da","phaseId":"review","message":"Phase \"Code Review\" completed"}
+{"timestamp":"2026-07-12T17:15:41.954Z","type":"run_completed","runId":"run-mri1wg9r-zb63da","message":"Workflow \"Code Review Pipeline\" completed successfully"}

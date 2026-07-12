@@ -1,0 +1,76 @@
+{
+  "id": "run-mri1wg9r-zb63da",
+  "workflowId": "wf-mrh43p51-dlz3k4",
+  "workflowName": "Code Review Pipeline",
+  "status": "completed",
+  "phaseResults": [
+    {
+      "phaseId": "scan",
+      "phaseName": "Security Scan",
+      "status": "completed",
+      "startedAt": "2026-07-12T17:11:58.049Z",
+      "taskResults": [
+        {
+          "taskId": "sec1",
+          "agent": "scout",
+          "task": "Scan for security vulnerabilities",
+          "status": "completed",
+          "startedAt": "2026-07-12T17:11:58.050Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T17:13:23.351Z",
+          "response": "## Security Vulnerability Scan Report\n\n**Status:** 🔴 **6 High-Severity Vulnerabilities + 1 Moderate**\n\n### Critical Findings\n\n| Package | Severity | Vulnerability | CVSS | Fix |\n|---------|----------|----------------|------|-----|\n| `@mariozechner/pi-coding-agent` | HIGH | Local privilege escalation via predictable temp paths | 7.3 | `npm audit fix` |\n| `@mariozechner/pi-coding-agent` | HIGH | XSS in HTML session exports (Markdown URL bypass) | 2.5 | `npm audit fix` |\n| `@mariozechner/pi-coding-agent` | HIGH | Race condition in auth.json → credential exposure | 2.2 | `npm audit fix` |\n| `fast-xml-builder` | HIGH | Attribute bypass + comment regex bypass | — | `npm audit fix` |\n| `protobufjs` | HIGH | Denial of Service (unbounded JSON recursion) | — | `npm audit fix` |\n| `undici` | HIGH | TLS bypass, header injection, queue poisoning, DoS | — | `npm audit fix` |\n| `ws` | HIGH | Uninitialized memory disclosure + memory exhaustion DoS | — | `npm audit fix` |\n| `brace-expansion` | MODERATE | DoS via large numeric ranges (exceeds `max` limit) | — | `npm audit fix` |\n\n### Code Quality (Clean)\n✅ **No hardcoded secrets** (password/API keys/tokens)  \n✅ **No SQL injection patterns** detected  \n✅ **No XSS in custom code** (no eval/innerHTML/dangerouslySetInnerHTML)  \n✅ **No insecure crypto** (no md5/sha1/DES/RC4)  \n✅ **No unvalidated input** issues at boundaries  \n\n### Recommended Action (Immediate)\n```bash\nnpm audit fix --force\n```\n\n**Then verify:**\n```bash\nnpm audit\n```\n\nThe `--force` flag is needed here because some transitive dependencies have breaking changes. Review the diff carefully after running the fix.\n\n**Optional:** Run full security audit details:\n```bash\nnpm audit fix && npm audit --json | jq '.metadata.vulnerabilities'\n```\n\n**Risk Level:** This project has **5 direct/indirect transitive vulnerabilities** in Node.js core dependencies (undici, ws, protobufjs). These are not in *your* code but in packages your dependencies rely on—patch them ASAP, especially the TLS bypass in undici and memory disclosure in ws.",
+          "usage": {
+            "input": 13,
+            "output": 856,
+            "cost": 0.010888900000000002,
+            "turns": 1
+          }
+        },
+        {
+          "taskId": "sec2",
+          "agent": "scout",
+          "task": "Check for exposed secrets",
+          "status": "completed",
+          "startedAt": "2026-07-12T17:11:58.062Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T17:13:21.072Z",
+          "response": "**✓ No exposed secrets found**\n\nSummary:\n- No hardcoded API keys, passwords, or tokens in source code\n- No `.env` files in root\n- No AWS credentials, database URLs, or PII patterns\n- Clean git history (50 commits, no recent secret patterns)\n- Minimal `.gitignore` is adequate for this project\n\n**One minor recommendation:** Strengthen `.gitignore` to catch accidental .env commits:\n\n```gitignore\n# Environment & Secrets\n.env\n.env.local\n.env.*.local\n*.pem\n*.key\n\n# Existing\nnode_modules/\n*.tgz\n.DS_Store\n```\n\nSkipped: git-secrets pre-commit hook, add if team commits frequently or handling real credentials later.",
+          "usage": {
+            "input": 13,
+            "output": 259,
+            "cost": 0.007765950000000001,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-12T17:13:23.355Z"
+    },
+    {
+      "phaseId": "review",
+      "phaseName": "Code Review",
+      "status": "completed",
+      "startedAt": "2026-07-12T17:13:23.355Z",
+      "taskResults": [
+        {
+          "taskId": "rev1",
+          "agent": "scout",
+          "task": "Review code quality and patterns",
+          "status": "completed",
+          "startedAt": "2026-07-12T17:13:23.355Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T17:15:41.916Z",
+          "response": "---\n\n## Summary\n\n**Comprehensive Review Complete** → saved to `CODE-QUALITY-REVIEW.md`\n\n### Top Findings\n\n| Category | Status | Evidence |\n|----------|--------|----------|\n| **Architecture** | ✅ Good | Clear module separation (dispatch → runners → execution) |\n| **Type Safety** | ⚠️ Loose | 17 files with `: any` at boundaries (TUI, events, renderers) |\n| **Patterns** | ⚠️ Mixed | String dispatch (20+ if-statements), long functions (203/201 LoC) |\n| **Error Handling** | ⚠️ Scattered | 13 files with try-catch, some without context logging |\n| **Tests** | ✅ Strong | 17 test files, no console.log bloat, clean async/await |\n| **Maintainability** | ⚠️ Medium | If-chains, mixed JS/TS, loose boundaries complicate refactoring |\n\n### Key Issues (Ranked by Impact)\n\n1. **Loose typing** (dispatch-exec.ts, live-widget.ts) → Define `TUIContext`, `EventPayload` interfaces\n2. **String dispatch** (dispatch.ts) → Use handler map + type union (1 file, 1h fix)\n3. **Long functions** (runner.ts 203 LoC, spawn.ts 201 LoC) → Extract waitForProcess, bufferOutput\n4. **Try-catch without context** (13 files) → Add logger.error with agent/task context\n5. **If-chain hell** (13 files) → Use early returns + guard clauses\n\n### ROI Ranking\n- **P1 (4h):** Type boundaries → IDE support, refactor safety, catches bugs early\n- **P2 (1h):** Dispatch table → Easier to audit all actions, no silent failures\n- **P3 (3h):** Function extraction → Testability, readability, state clarity\n- **P4 (2h):** Error logging → Debugging, observability in production\n- **P5 (2h):** If-flattening → Readability, reduced cognitive load\n\n**Grade: B+** — Elevates to **A** with P1+P2 fixes (~5h work, high confidence given 17-file test coverage).",
+          "usage": {
+            "input": 13,
+            "output": 590,
+            "cost": 0.014169500000000002,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-12T17:15:41.953Z"
+    }
+  ],
+  "startedAt": "2026-07-12T17:11:58.047Z",
+  "completedAt": "2026-07-12T17:15:41.953Z"
+}

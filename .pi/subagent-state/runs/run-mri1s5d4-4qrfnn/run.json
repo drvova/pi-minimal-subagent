@@ -1,0 +1,35 @@
+{
+  "id": "run-mri1s5d4-4qrfnn",
+  "workflowId": "wf-mri1rya1-xob0ce",
+  "workflowName": "UX Probe",
+  "status": "completed",
+  "phaseResults": [
+    {
+      "phaseId": "p1",
+      "phaseName": "P1",
+      "status": "completed",
+      "startedAt": "2026-07-12T17:08:37.289Z",
+      "taskResults": [
+        {
+          "taskId": "t1",
+          "agent": "scout",
+          "task": "Reply with exactly UX-PROBE-OK",
+          "status": "completed",
+          "startedAt": "2026-07-12T17:08:37.289Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T17:08:54.814Z",
+          "response": "UX-PROBE-OK",
+          "usage": {
+            "input": 10,
+            "output": 65,
+            "cost": 0.0761325,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-12T17:08:54.815Z"
+    }
+  ],
+  "startedAt": "2026-07-12T17:08:37.288Z",
+  "completedAt": "2026-07-12T17:08:54.815Z"
+}
