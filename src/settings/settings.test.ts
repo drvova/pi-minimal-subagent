@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseDelegationPolicy, parseEnvironment, mergeEnvironment } from "./settings.ts";
+import { parseDelegationPolicy, parseEnvironment, mergeEnvironment } from "./settings-parsers.ts";
 
 // --- parseEnvironment ---
 
