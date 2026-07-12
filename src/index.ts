@@ -16,6 +16,7 @@ import { type SubagentDetails, type SubagentResult } from "./execution/types.ts"
 import { emptyUsage, isResultError } from "./execution/result-utils.ts";
 import { renderSubagentCall, renderSubagentResult } from "./rendering/render.ts";
 import { renderCompletionNotification, renderGoalWidget, renderWorkflowWidget } from "./rendering/widgets.ts";
+import { buildFailedState, buildRunningState, createLiveWidget, state, updateLiveState } from "./rendering/live-widget.ts";
 import { resolveSettings } from "./settings/settings.ts";
 import { listRuns, getRun } from "./runs/persistence.ts";
 import { createTeam, removeTeam, updateTeam } from "./teams/manager.ts";
@@ -56,6 +57,25 @@ const Params = Type.Object({
 });
 
 export default function (pi: ExtensionAPI) {
+  let widgetRegistered = false;
+
+  // Update live state via event bus
+  pi.events.on("subagent:created", (data: any) => {
+    updateLiveState({ agents: [buildRunningState(data.agent, data.task, data.model, data.timestamp)] });
+  });
+  pi.events.on("subagent:completed", () => updateLiveState({ agents: [] }));
+  pi.events.on("subagent:failed", (data: any) => {
+    updateLiveState({ agents: [buildFailedState(data.agent, data.task, data.model, data.errorMessage || "failed")] });
+  });
+
+  // Register live widget on first context (needs ExtensionContext)
+  pi.on("context", (_event: any, ctx: any) => {
+    if (!widgetRegistered && ctx?.setWidget) {
+      ctx.setWidget("subagent-live", (tui: any, theme: any) => createLiveWidget(tui, theme), { placement: "aboveEditor" });
+      widgetRegistered = true;
+    }
+  });
+
   pi.registerTool({
     name: "subagent", label: "Subagent",
     description: "Unified subagent tool. Run agents, workflows, goal loops. Manage agents, teams, workflows. Check run status. Use action parameter to select operation.",
