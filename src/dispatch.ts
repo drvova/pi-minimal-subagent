@@ -24,7 +24,7 @@ export async function dispatchAction(
   if (a === "run-workflow") return handleWorkflowRun(params, cwd, signal);
   if (a === "run-goal") return handleGoalRun(params, cwd, signal);
   if (a === "gsd") return handleGSD(params, cwd, signal);
-  if (a === "steer") return handleSteer(params, cwd);
+  if (a === "steer") return handleSteer(params, cwd, signal, onUpdate);
 
   if (a === "workflows") return handleWorkflowList(cwd);
   if (a === "workflow-create") return handleWorkflowCreate(params, cwd);

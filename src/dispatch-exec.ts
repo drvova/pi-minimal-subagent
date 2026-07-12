@@ -126,11 +126,14 @@ export async function handleGoalRun(params: any, cwd: string, signal: any): Prom
   return { content: [{ type: "text", text: `Goal: ${gr.goal} — ${gr.status}` }], details: { run: gr } };
 }
 
-export function handleSteer(params: any, cwd: string): ToolResult {
+export async function handleSteer(params: any, cwd: string, signal: any, onUpdate: any): Promise<ToolResult> {
   if (!params.agent || !params.task) return err("action=steer requires agent and task.");
   const r = steerSubagent(cwd, params.agent!, params.task!, params.name || "manual steer");
   if (!r) return { content: [{ type: "text", text: `No active subagent "${params.agent}" found. Active: ${listActive(cwd).map((a: any) => a.agent).join(", ") || "(none)"}` }], details: {} };
-  return { content: [{ type: "text", text: `Steered "${params.agent}": ${r.reason}\nNew task: ${r.newTask.slice(0, 200)}` }], details: { steered: r } };
+  // Restart with the steered task (abort half already done by steerSubagent)
+  const restarted = await handleRun({ ...params, task: r.newTask, resume: undefined, _parentContext: undefined }, cwd, signal, onUpdate);
+  restarted.details = { ...restarted.details, steered: r };
+  return restarted;
 }
 
 export async function handleGSD(params: any, cwd: string, signal: any): Promise<ToolResult> {
