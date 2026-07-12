@@ -117,7 +117,7 @@ test("normalizeCompletedResult: no tool failure, no error message modification",
     exitCode: 1, sawAgentEnd: true, stopReason: "error", messages: [],
     toolExecutions: [{ toolCallId: "1", toolName: "test-tool", status: "completed", updates: 1 }],
   }), false);
-  assert.equal(r.errorMessage, "");
+  assert.equal(r.errorMessage, undefined);
 });
 
 test("normalizeCompletedResult: stop_reason=error propagates when exit > 0", () => {

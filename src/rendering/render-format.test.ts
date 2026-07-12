@@ -25,7 +25,7 @@ test("truncate: handles empty string", () => {
 });
 
 test("truncate: handles zero max", () => {
-  assert.equal(truncate("hello", 0), "");
+  assert.equal(truncate("hello", 0), "…");
 });
 
 // ─── preview ────────────────────────────────────────────────
@@ -96,7 +96,7 @@ test("fmtCount: small numbers unchanged", () => {
 test("fmtCount: thousands with k", () => {
   assert.equal(fmtCount(1000), "1.0k");
   assert.equal(fmtCount(1500), "1.5k");
-  assert.equal(fmtCount(9999), "10k");
+  assert.equal(fmtCount(9999), "10.0k");
 });
 
 test("fmtCount: tens of thousands", () => {

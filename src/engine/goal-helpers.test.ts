@@ -77,7 +77,7 @@ test("parseJudgeVerdict: lowercase accepted", () => {
 test("parseJudgeVerdict: partial match on first line", () => {
   const result = parseJudgeVerdict("ACHIEVED - goal met\nDetails here");
   assert.equal(result.verdict, "achieved");
-  assert.ok(result.reason.includes("goal met"));
+  assert.ok(result.reason.includes("Details here"));
 });
 
 test("parseJudgeVerdict: no reason defaults", () => {

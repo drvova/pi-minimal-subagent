@@ -110,7 +110,7 @@ test("team-create: missing params", async () => {
 test("team-update: success", async () => {
   await handleTeamCreate({
     name: "test-team", description: "Old",
-    members: JSON.stringify([]),
+    members: JSON.stringify([{ agent: "scout", role: "lead" }]),
   }, testCwd);
 
   const r = await handleTeamUpdate({ name: "test-team", description: "New" }, testCwd);
@@ -125,7 +125,7 @@ test("team-update: missing name", async () => {
 test("team-delete: success", async () => {
   await handleTeamCreate({
     name: "test-team", description: "desc",
-    members: JSON.stringify([]),
+    members: JSON.stringify([{ agent: "scout", role: "lead" }]),
   }, testCwd);
 
   const r = await handleTeamDelete({ name: "test-team" }, testCwd);
@@ -189,8 +189,8 @@ test("agent-delete: missing name", async () => {
 
 test("workflow-create: validation errors propagate", async () => {
   const r = await handleWorkflowCreate({
-    name: "", description: "desc",
-    phases: JSON.stringify([]),
+    name: "bad-wf", description: "desc",
+    phases: JSON.stringify([{ id: "p1", name: "P1", tasks: [] }]),
   }, testCwd);
   assert.equal(r.isError, true);
   assert.ok(r.content[0].text.includes("Validation"));
