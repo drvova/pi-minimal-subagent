@@ -8,6 +8,7 @@ import { evaluatePolicy, formatComplexityReport, selectAgent } from "./delegatio
 import { abortBackgroundRun, startBackgroundRun } from "./engine/background.ts";
 import { runGoalLoop } from "./engine/goal-runner.ts";
 import { runWorkflow } from "./engine/workflow-runner.ts";
+import { setEventBus, emitSubagentSteered } from "./engine/events.ts";
 import { runSubagent } from "./execution/runner.ts";
 import { getResultSummaryText } from "./execution/progress.js";
 import { type SubagentDetails, type SubagentResult } from "./execution/types.ts";
@@ -60,6 +61,13 @@ export default function (pi: ExtensionAPI) {
     async execute(_toolCallId, params, signal, onUpdate, ctx) {
       const cwd = ctx.cwd;
       const a = params.action?.trim().toLowerCase() || "run";
+      setEventBus(pi.events);
+
+      // Emit steered event when delegation policy redirects agent
+      const emitSteered = (from: string, to: string, task: string, reason: string) => {
+        emitSubagentSteered(from, to, task, reason, cwd);
+      };
+      void emitSteered;
 
       // ─── run ─────────────────────────────────────────────────
       if (a === "run") {
@@ -76,7 +84,9 @@ export default function (pi: ExtensionAPI) {
         }
         let agent: AgentConfig | undefined = discovery.agents.find((c) => c.name === params.agent);
         if (!agent && params.agent === "auto" && policy?.agentRouting) {
-          agent = selectAgent(params.task!, policy.agentRouting, discovery.agents) ?? discovery.agents[0];
+          const routed = selectAgent(params.task!, policy.agentRouting, discovery.agents);
+          if (routed) emitSubagentSteered("auto", routed.name, params.task!, "policy routing", cwd);
+          agent = routed ?? discovery.agents[0];
         }
         if (!agent) {
           const names = discovery.agents.map((x) => x.name);

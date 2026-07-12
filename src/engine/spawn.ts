@@ -122,7 +122,6 @@ export function spawnPiTask(
     });
 
     proc.on("close", (code) => {
-      result.status = code === 0 ? "completed" : "failed";
       result.exitCode = code ?? 1;
       result.completedAt = now();
 
@@ -155,6 +154,13 @@ export function spawnPiTask(
       result.usage = usage;
       if (!result.response && stderr.trim()) {
         result.errorMessage = stderr.trim();
+      }
+
+      // needs_attention: process exited cleanly but produced no substantive output
+      if (code === 0 && !result.response && !result.errorMessage) {
+        result.status = "needs_attention";
+      } else {
+        result.status = code === 0 ? "completed" : "failed";
       }
 
       resolve(result);

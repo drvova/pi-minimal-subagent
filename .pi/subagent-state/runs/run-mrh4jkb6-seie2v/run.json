@@ -1,0 +1,55 @@
+{
+  "id": "run-mrh4jkb6-seie2v",
+  "workflowId": "wf-mrh4jkb5-en5419",
+  "workflowName": "Rendering Audit",
+  "status": "completed",
+  "phaseResults": [
+    {
+      "phaseId": "scan",
+      "phaseName": "File Scan",
+      "status": "completed",
+      "startedAt": "2026-07-12T01:38:09.427Z",
+      "taskResults": [
+        {
+          "taskId": "s1",
+          "agent": "scout",
+          "task": "List all rendering files and their line counts",
+          "status": "completed",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T01:38:09.427Z",
+          "response": "[DRY RUN] Would execute: agent=scout, task=\"List all rendering files and their line counts\""
+        },
+        {
+          "taskId": "s2",
+          "agent": "scout",
+          "task": "Check for any rendering bugs or issues",
+          "status": "completed",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T01:38:09.427Z",
+          "response": "[DRY RUN] Would execute: agent=scout, task=\"Check for any rendering bugs or issues\""
+        }
+      ],
+      "completedAt": "2026-07-12T01:38:09.446Z"
+    },
+    {
+      "phaseId": "report",
+      "phaseName": "Report",
+      "status": "completed",
+      "startedAt": "2026-07-12T01:38:09.447Z",
+      "taskResults": [
+        {
+          "taskId": "r1",
+          "agent": "scout",
+          "task": "Summarize findings into a report",
+          "status": "completed",
+          "exitCode": 0,
+          "completedAt": "2026-07-12T01:38:09.447Z",
+          "response": "[DRY RUN] Would execute: agent=scout, task=\"Summarize findings into a report\""
+        }
+      ],
+      "completedAt": "2026-07-12T01:38:09.447Z"
+    }
+  ],
+  "startedAt": "2026-07-12T01:38:09.426Z",
+  "completedAt": "2026-07-12T01:38:09.447Z"
+}

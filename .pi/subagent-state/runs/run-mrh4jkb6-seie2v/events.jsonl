@@ -1,0 +1,6 @@
+{"timestamp":"2026-07-12T01:38:09.427Z","type":"run_started","runId":"run-mrh4jkb6-seie2v","message":"Workflow \"Rendering Audit\" started (2 phases)"}
+{"timestamp":"2026-07-12T01:38:09.427Z","type":"phase_started","runId":"run-mrh4jkb6-seie2v","phaseId":"scan","message":"Phase \"File Scan\" started with 2 tasks"}
+{"timestamp":"2026-07-12T01:38:09.446Z","type":"phase_completed","runId":"run-mrh4jkb6-seie2v","phaseId":"scan","message":"Phase \"File Scan\" completed"}
+{"timestamp":"2026-07-12T01:38:09.447Z","type":"phase_started","runId":"run-mrh4jkb6-seie2v","phaseId":"report","message":"Phase \"Report\" started with 1 tasks"}
+{"timestamp":"2026-07-12T01:38:09.447Z","type":"phase_completed","runId":"run-mrh4jkb6-seie2v","phaseId":"report","message":"Phase \"Report\" completed"}
+{"timestamp":"2026-07-12T01:38:09.447Z","type":"run_completed","runId":"run-mrh4jkb6-seie2v","message":"Workflow \"Rendering Audit\" completed successfully"}

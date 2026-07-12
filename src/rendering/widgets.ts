@@ -1,52 +1,17 @@
 // Rich widget renderers for subagent, workflow, and goal run results.
-// Integrates with Pi's TUI: Container, Spacer, Text, Markdown.
+// Shared helpers (icon, statusColor, progressBar, tokenDisplay) in ./widgets-shared.ts
 
 import { getMarkdownTheme } from "@mariozechner/pi-coding-agent";
 import { Container, Markdown, Spacer, Text } from "@mariozechner/pi-tui";
 import { getFinalAssistantText } from "../execution/progress.js";
 import type { SubagentResult } from "../execution/types.ts";
 import { isResultError, isResultSuccess } from "../execution/result-utils.ts";
-import type { GoalRun, GoalTurn } from "../engine/goal-types.ts";
-import type { PhaseResult, RunStatus, TaskResult, WorkflowRun } from "../runs/types.ts";
-import { addSection } from "./render-activities.ts";
-import { fmtCount, fmtModelProvider, fmtUsage, preview, MAX_TASK_PREVIEW_CHARS } from "./render-format.ts";
+import type { GoalRun } from "../engine/goal-types.ts";
+import type { WorkflowRun } from "../runs/types.ts";
 import { renderActivityLines } from "./render-activities.ts";
-
-// ─── Theme color helpers ───────────────────────────────────────
-
-function icon(status: RunStatus | string): string {
-  switch (status) {
-    case "completed": case "achieved": return "✓";
-    case "failed": case "error": case "blocked": return "✗";
-    case "running": case "pending": return "…";
-    case "aborted": return "⊘";
-    default: return "•";
-  }
-}
-
-function statusColor(status: RunStatus | string): string {
-  switch (status) {
-    case "completed": case "achieved": return "success";
-    case "failed": case "error": case "blocked": return "error";
-    case "running": return "warning";
-    case "aborted": return "error";
-    default: return "muted";
-  }
-}
-
-function progressBar(completed: number, total: number, width = 20): string {
-  if (total === 0) return "";
-  const done = Math.round((completed / total) * width);
-  return `[${"█".repeat(done)}${"░".repeat(width - done)}] ${completed}/${total}`;
-}
-
-function tokenDisplay(usage: Record<string, number>, fg: (c: any, t: string) => string): string {
-  const parts: string[] = [];
-  if (usage.input) parts.push(fg("dim", `↑${fmtCount(usage.input)}`));
-  if (usage.output) parts.push(fg("dim", `↓${fmtCount(usage.output)}`));
-  if (usage.cost) parts.push(fg("dim", `$${usage.cost.toFixed(4)}`));
-  return parts.join(" ");
-}
+import { fmtCount, fmtModelProvider, MAX_TASK_PREVIEW_CHARS } from "./render-format.ts";
+import type { RunStatus } from "../runs/types.ts";
+import { icon, progressBar, statusColor, tokenDisplay } from "./widgets-shared.ts";
 
 // ─── Subagent widget ──────────────────────────────────────────
 
@@ -157,7 +122,8 @@ export function renderWorkflowWidget(run: WorkflowRun, theme: any) {
       const tColor = statusColor(t.status);
       const response = (t.response || t.errorMessage || "").slice(0, 120);
       const agentLabel = fg("dim", t.agent);
-      const verdict = response ? fg(tColor, response) : fg("dim", "(running...)");
+      const emptyLabel = t.status === "needs_attention" ? fg("warning", "(no output — needs attention)") : fg("dim", "(running...)");
+      const verdict = response ? fg(tColor, response) : emptyLabel;
       container.addChild(new Text(`     ${fg(tColor, tIco)} ${agentLabel}: ${verdict}`, 0, 0));
     }
     if (i < run.phaseResults.length - 1) container.addChild(new Spacer(1));

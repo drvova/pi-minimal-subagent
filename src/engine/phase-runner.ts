@@ -73,7 +73,7 @@ export async function runPhase(
     await Promise.all(batchPromises);
   }
 
-  const allDone = phaseResult.taskResults.every((t) => t.status === "completed");
+  const allDone = phaseResult.taskResults.every((t) => t.status === "completed" || t.status === "needs_attention");
   const anyFailed = phaseResult.taskResults.some((t) => t.status === "failed");
   const anyAborted = phaseResult.taskResults.some((t) => t.status === "aborted");
   if (anyAborted) phaseResult.status = "aborted";

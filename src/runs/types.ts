@@ -1,6 +1,6 @@
 // Run types — owned by runs slice.
 
-export type RunStatus = "pending" | "running" | "completed" | "failed" | "aborted";
+export type RunStatus = "pending" | "running" | "completed" | "failed" | "aborted" | "needs_attention";
 
 export interface WorkflowRun {
   id: string;

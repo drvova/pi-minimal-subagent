@@ -6,6 +6,7 @@ import type { AgentConfig } from "../agents/agents.ts";
 import type { Settings } from "../settings/settings.ts";
 import { type SubagentDetails, type SubagentResult } from "./types.ts";
 import { emptyUsage, normalizeCompletedResult } from "./result-utils.ts";
+import { emitSubagentCompleted, emitSubagentCreated, emitSubagentFailed, emitSubagentStarted } from "../engine/events.ts";
 import {
   AGENT_END_GRACE_MS,
   SIGKILL_TIMEOUT_MS,
@@ -64,6 +65,8 @@ export async function runSubagent(opts: RunSubagentOptions): Promise<SubagentRes
 
   try {
     const piArgs = buildPiArgs({ task, systemPromptPath, settings, agent });
+    emitSubagentCreated(agent.name, task, agent.model, cwd);
+
     const artifacts = createArtifactFiles();
     result.artifactDir = artifacts.dir;
     result.stdoutArtifact = artifacts.stdoutPath;
@@ -72,6 +75,7 @@ export async function runSubagent(opts: RunSubagentOptions): Promise<SubagentRes
 
     const exitCode = await new Promise<number>((resolve) => {
       const { command, prefixArgs } = resolvePiSpawn();
+      emitSubagentStarted(agent.name, task, cwd);
       const proc = spawn(command, [...prefixArgs, ...piArgs], {
         cwd,
         shell: false,
@@ -184,7 +188,15 @@ export async function runSubagent(opts: RunSubagentOptions): Promise<SubagentRes
     });
 
     result.exitCode = exitCode;
-    return normalizeCompletedResult(result, wasAborted);
+    const normalized = normalizeCompletedResult(result, wasAborted);
+
+    if (normalized.exitCode === 0 && !normalized.stopReason) {
+      emitSubagentCompleted(agent.name, task, normalized.exitCode, normalized.usage?.cost, normalized.usage?.turns, cwd);
+    } else if (normalized.exitCode > 0 || normalized.stopReason === "error") {
+      emitSubagentFailed(agent.name, task, normalized.exitCode, normalized.errorMessage, cwd);
+    }
+
+    return normalized;
   } finally {
     cleanupTempDir(tmpDir);
   }

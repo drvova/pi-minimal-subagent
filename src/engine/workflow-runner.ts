@@ -5,6 +5,7 @@ import { appendRunEvent, saveRun, updateRun } from "../runs/persistence.ts";
 import type { Settings } from "../settings/settings.ts";
 import { now } from "./spawn.ts";
 import { runPhase } from "./phase-runner.ts";
+import { emitWorkflowCompleted, emitWorkflowFailed, emitWorkflowStarted } from "./events.ts";
 
 export interface EngineOptions {
   cwd: string;
@@ -47,6 +48,7 @@ export async function runWorkflow(opts: EngineOptions): Promise<WorkflowRun> {
   const run = createRun(workflow);
   run.status = "running";
   saveRun(cwd, run);
+  emitWorkflowStarted(workflow.id, workflow.name, workflow.phases.length, cwd);
 
   appendRunEvent(cwd, run.id, {
     timestamp: now(), type: "run_started", runId: run.id,
@@ -79,12 +81,14 @@ export async function runWorkflow(opts: EngineOptions): Promise<WorkflowRun> {
     run.status = "completed"; run.completedAt = now();
     updateRun(cwd, run);
     appendRunEvent(cwd, run.id, { timestamp: now(), type: "run_completed", runId: run.id, message: `Workflow "${workflow.name}" completed successfully` });
+    emitWorkflowCompleted(workflow.id, workflow.name, workflow.phases.length, cwd);
     return run;
   } catch (err) {
     run.status = "failed"; run.completedAt = now();
     run.error = err instanceof Error ? err.message : String(err);
     updateRun(cwd, run);
     appendRunEvent(cwd, run.id, { timestamp: now(), type: "run_failed", runId: run.id, message: run.error });
+    emitWorkflowFailed(workflow.id, workflow.name, run.error!, cwd);
     return run;
   }
 }

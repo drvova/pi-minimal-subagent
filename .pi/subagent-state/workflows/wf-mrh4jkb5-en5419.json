@@ -1,0 +1,38 @@
+{
+  "id": "wf-mrh4jkb5-en5419",
+  "name": "Rendering Audit",
+  "description": "Multi-phase audit of the rendering system",
+  "phases": [
+    {
+      "id": "scan",
+      "name": "File Scan",
+      "concurrency": 2,
+      "tasks": [
+        {
+          "id": "s1",
+          "agent": "scout",
+          "task": "List all rendering files and their line counts"
+        },
+        {
+          "id": "s2",
+          "agent": "scout",
+          "task": "Check for any rendering bugs or issues"
+        }
+      ]
+    },
+    {
+      "id": "report",
+      "name": "Report",
+      "concurrency": 1,
+      "tasks": [
+        {
+          "id": "r1",
+          "agent": "scout",
+          "task": "Summarize findings into a report"
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-07-12T01:38:09.425Z",
+  "updatedAt": "2026-07-12T01:38:09.425Z"
+}

@@ -3,6 +3,7 @@ import type { Settings } from "../settings/settings.ts";
 import { now, spawnForTask } from "./spawn.ts";
 import { buildJudgePrompt, buildWorkerPrompt, parseJudgeVerdict } from "./goal-helpers.ts";
 import type { GoalConfig, GoalRun, GoalTurn } from "./goal-types.ts";
+import { emitGoalLoopCompleted, emitGoalLoopFailed, emitGoalLoopStarted } from "./events.ts";
 
 export interface GoalRunnerOptions {
   cwd: string;
@@ -30,6 +31,7 @@ export async function runGoalLoop(opts: GoalRunnerOptions): Promise<GoalRun> {
   };
 
   let previousFeedback = "";
+  emitGoalLoopStarted(config.goal, config.workerAgent, config.judgeAgent, config.maxTurns, cwd);
 
   for (let turnNum = 1; turnNum <= config.maxTurns; turnNum++) {
     if (signal?.aborted) { run.status = "aborted"; break; }
@@ -98,5 +100,12 @@ export async function runGoalLoop(opts: GoalRunnerOptions): Promise<GoalRun> {
     run.status = "max_turns";
   }
   run.completedAt = now();
+
+  if (run.status === "achieved") {
+    emitGoalLoopCompleted(config.goal, run.turns.length, run.totalCost, cwd);
+  } else {
+    emitGoalLoopFailed(config.goal, run.status, cwd);
+  }
+
   return run;
 }
