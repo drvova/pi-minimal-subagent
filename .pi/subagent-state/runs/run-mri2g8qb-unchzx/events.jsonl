@@ -3,3 +3,6 @@
 {"timestamp":"2026-07-12T17:27:21.396Z","type":"task_started","runId":"run-mri2g8qb-unchzx","phaseId":"p1","taskId":"t1"}
 {"timestamp":"2026-07-12T17:27:21.401Z","type":"task_started","runId":"run-mri2g8qb-unchzx","phaseId":"p1","taskId":"t2"}
 {"timestamp":"2026-07-12T17:27:59.544Z","type":"task_completed","runId":"run-mri2g8qb-unchzx","phaseId":"p1","taskId":"t1","message":"I need clarification—**\"check A\" is too vague**. What should I verify?\n\nOptions:\n- **A file?** (name it: `src/foo.ts`, `test.js`, etc.)\n- **A checkpoint?** (which one: A, B, C?)\n- **Recent code?** (la"}
+{"timestamp":"2026-07-12T17:31:55.192Z","type":"task_completed","runId":"run-mri2g8qb-unchzx","phaseId":"p1","taskId":"t2","message":"## ✅ **B+ → A- Code Quality Upgrade**\n\n**Grade: B+ → A-** after fixing P2 (highest ROI issue).\n\n### What fixed\n**P2: String-based action dispatch** (dispatch.ts)\n- Replaced 20+ if-statements with hand"}
+{"timestamp":"2026-07-12T17:31:55.193Z","type":"phase_completed","runId":"run-mri2g8qb-unchzx","phaseId":"p1","message":"Phase \"Phase 1\" completed"}
+{"timestamp":"2026-07-12T17:31:55.193Z","type":"run_completed","runId":"run-mri2g8qb-unchzx","message":"Workflow \"Probe Flow\" completed successfully"}

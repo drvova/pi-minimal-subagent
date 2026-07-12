@@ -40,7 +40,7 @@ export async function handleRunStatus(params: any, cwd: string): Promise<ToolRes
   let run = getRun(cwd, agentId!);
   if (run) run = reconcileStaleRun(cwd, run);
   if (params.wait) {
-    for (let i = 0; i < 120 && run && run.status !== "completed" && run.status !== "failed" && run.status !== "aborted"; i++) {
+    for (let i = 0; i < 120 && run && run.status !== "completed" && run.status !== "failed" && run.status !== "aborted" && run.status !== "needs_attention"; i++) {
       await new Promise(r => setTimeout(r, 1000));
       run = getRun(cwd, agentId!);
     }
