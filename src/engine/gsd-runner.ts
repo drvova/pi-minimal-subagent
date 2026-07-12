@@ -95,9 +95,9 @@ export async function runGSDCycle(opts: GSDOptions): Promise<GSDRun> {
   const discovery = discoverAgents(cwd);
   const agents = discovery.agents;
 
-  const planner = opts.plannerAgent || agents.find(a => a.name.includes("planner"))?.name || agents[0]?.name;
-  const executor = opts.executorAgent || agents.find(a => a.name.includes("executor"))?.name || agents[0]?.name;
-  const reviewer = opts.reviewerAgent || agents.find(a => a.name.includes("reviewer"))?.name || agents[0]?.name;
+  const planner = opts.plannerAgent || agents.find(a => a.name.includes("planner"))?.name || agents[0]?.name || "";
+  const executor = opts.executorAgent || agents.find(a => a.name.includes("executor"))?.name || agents[0]?.name || "";
+  const reviewer = opts.reviewerAgent || agents.find(a => a.name.includes("reviewer"))?.name || agents[0]?.name || "";
 
   const run: GSDRun = {
     id: generateId(),
@@ -107,6 +107,12 @@ export async function runGSDCycle(opts: GSDOptions): Promise<GSDRun> {
     totalCost: 0,
     startedAt: now(),
   };
+
+  if (!planner || !executor || !reviewer) {
+    run.status = "failed";
+    run.completedAt = now();
+    return run;
+  }
 
   // Phase 1: Discuss
   const discussPrompt = `GSD Phase: DISCUSS\n\nFeature: ${feature}\n\nCapture implementation decisions before planning. Identify what needs to be built, surface constraints, assumptions, and tradeoffs. Output a clear problem statement.`;

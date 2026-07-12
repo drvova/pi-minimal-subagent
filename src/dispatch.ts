@@ -91,7 +91,7 @@ async function handleRun(params: any, cwd: string, signal: any, onUpdate: any): 
   if (!agent && params.agent === "auto" && policy?.agentRouting) {
     const routed = selectAgent(params.task!, policy.agentRouting, discovery.agents);
     if (routed) emitSubagentSteered("auto", routed.name, params.task!, "policy routing", cwd);
-    agent = routed ?? discovery.agents[0] as any;
+    agent = routed ?? (discovery.agents[0] || undefined);
   }
   if (!agent) {
     const names = discovery.agents.map((x: any) => x.name);
