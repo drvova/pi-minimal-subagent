@@ -1,7 +1,8 @@
 {
-  "name": "pi-minimal-subagents",
-  "version": "0.1.0",
-  "description": "Minimal named subagent tool for Pi. Run one configured agent on one task.",
+  "name": "pi-minimal-subagent",
+  "version": "1.0.0",
+  "description": "Unified subagent tool for Pi — run agents, workflows, goal loops. Live TUI widgets, event bus, durable state.",
+  "author": "drvova",
   "type": "module",
   "keywords": [
     "pi",
