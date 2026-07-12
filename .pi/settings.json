@@ -1,0 +1,13 @@
+{
+  "pi-minimal-subagent": {
+    "delegation": {
+      "autoDelegate": true,
+      "complexityThreshold": 0.3,
+      "minTaskLength": 50,
+      "agentRouting": [
+        { "keywords": ["review", "audit", "verify"], "agent": "gsd-reviewer", "weight": 2 },
+        { "keywords": ["read", "find", "count", "list"], "agent": "scout", "weight": 1 }
+      ]
+    }
+  }
+}

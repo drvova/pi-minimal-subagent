@@ -1,0 +1,26 @@
+{
+  "id": "wf-mri1czly-46z8ay",
+  "name": "Probe Flow",
+  "description": "test",
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Phase 1",
+      "concurrency": 2,
+      "tasks": [
+        {
+          "id": "t1",
+          "agent": "scout",
+          "task": "check A"
+        },
+        {
+          "id": "t2",
+          "agent": "scout",
+          "task": "check B"
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-07-12T16:56:49.990Z",
+  "updatedAt": "2026-07-12T16:56:49.990Z"
+}

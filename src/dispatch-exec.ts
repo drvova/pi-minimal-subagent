@@ -72,7 +72,9 @@ export async function handleRun(params: any, cwd: string, signal: any, onUpdate:
   }
   if (!agent) {
     const names = discovery.agents.map((x: any) => x.name);
-    const msg = names.length ? `Unknown agent "${params.agent}". Available: ${names.join(", ")}.` : "No agents found.";
+    const msg = params.agent === "auto"
+      ? `agent "auto" requires a delegation policy with agentRouting (settings key "pi-minimal-subagent".delegation). Available agents: ${names.join(", ") || "(none)"}.`
+      : names.length ? `Unknown agent "${params.agent}". Available: ${names.join(", ")}.` : "No agents found.";
     return { content: [{ type: "text", text: msg }], details: makeDetails([failedResult(params.agent, params.task!, msg)], { availableAgents: names, projectAgentsDir: discovery.projectAgentsDir }), isError: true };
   }
   const effectiveAgent: AgentConfig = { ...agent };

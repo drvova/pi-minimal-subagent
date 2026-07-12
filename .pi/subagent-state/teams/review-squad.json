@@ -1,0 +1,16 @@
+{
+  "name": "review-squad",
+  "description": "Test team",
+  "members": [
+    {
+      "agent": "scout",
+      "role": "lead"
+    },
+    {
+      "agent": "gsd-reviewer",
+      "role": "reviewer"
+    }
+  ],
+  "createdAt": "2026-07-12T16:56:49.990Z",
+  "updatedAt": "2026-07-12T16:56:49.990Z"
+}
