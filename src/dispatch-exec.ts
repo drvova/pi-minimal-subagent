@@ -139,7 +139,7 @@ export async function handleSteer(params: any, cwd: string, signal: any, onUpdat
 export async function handleGSD(params: any, cwd: string, signal: any): Promise<ToolResult> {
   if (!params.task) return err("action=gsd requires task (feature description).");
   const settings = resolveSettings(cwd);
-  const run = await runGSDCycle({ cwd, feature: params.task!, settings, signal, dryRun: params.dryRun });
+  const run = await runGSDCycle({ cwd, feature: params.task!, settings, signal, dryRun: params.dryRun, plannerAgent: params.plannerAgent, executorAgent: params.executorAgent, reviewerAgent: params.reviewerAgent });
   const lines = [`GSD Cycle: ${run.feature.slice(0, 80)}`, `Status: ${run.status}`, `Cost: $${run.totalCost.toFixed(4)}`, "", "Phases:"];
   for (const p of run.phases) {
     lines.push(`  ${p.status === "completed" ? "\u2713" : "\u00d7"} ${p.name} (${p.agent}): ${p.response.slice(0, 120)}`);

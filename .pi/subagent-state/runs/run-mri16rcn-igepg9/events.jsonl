@@ -1,0 +1,8 @@
+{"timestamp":"2026-07-12T16:51:59.352Z","type":"run_started","runId":"run-mri16rcn-igepg9","message":"Workflow \"Code Review Pipeline\" started (2 phases)"}
+{"timestamp":"2026-07-12T16:51:59.353Z","type":"phase_started","runId":"run-mri16rcn-igepg9","phaseId":"scan","message":"Phase \"Security Scan\" started with 2 tasks"}
+{"timestamp":"2026-07-12T16:51:59.353Z","type":"task_started","runId":"run-mri16rcn-igepg9","phaseId":"scan","taskId":"sec1"}
+{"timestamp":"2026-07-12T16:51:59.360Z","type":"task_started","runId":"run-mri16rcn-igepg9","phaseId":"scan","taskId":"sec2"}
+{"timestamp":"2026-07-12T16:52:17.145Z","type":"task_failed","runId":"run-mri16rcn-igepg9","phaseId":"scan","taskId":"sec1","message":"[freebuff] catalog: loaded 9 models from disk cache\n[freebuff] loaded 9 models from catalog\n[freebuff] connected — 9 models\nMCP server failed (jina-mcp-server): MCP server jina-mcp-server exited before responding (0)"}
+{"timestamp":"2026-07-12T16:52:17.171Z","type":"task_failed","runId":"run-mri16rcn-igepg9","phaseId":"scan","taskId":"sec2","message":"[freebuff] catalog: loaded 9 models from disk cache\n[freebuff] loaded 9 models from catalog\n[freebuff] connected — 9 models\nMCP server failed (jina-mcp-server): MCP server jina-mcp-server exited before responding (0)"}
+{"timestamp":"2026-07-12T16:52:17.171Z","type":"phase_failed","runId":"run-mri16rcn-igepg9","phaseId":"scan","message":"Phase \"Security Scan\" aborted"}
+{"timestamp":"2026-07-12T16:52:17.171Z","type":"run_aborted","runId":"run-mri16rcn-igepg9","message":"Workflow aborted"}

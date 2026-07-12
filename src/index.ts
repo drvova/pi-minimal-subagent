@@ -31,6 +31,7 @@ const Params = Type.Object({
   workflowId: Type.Optional(Type.String({})),
   dryRun: Type.Optional(Type.Boolean({ description: "Scaffold phases without spawning real Pi processes." })),
   goal: Type.Optional(Type.String({})), workerAgent: Type.Optional(Type.String({})), judgeAgent: Type.Optional(Type.String({})), budget: Type.Optional(Type.Number({})),
+  plannerAgent: Type.Optional(Type.String({ description: "GSD Discuss/Plan agent override." })), executorAgent: Type.Optional(Type.String({ description: "GSD Execute agent override." })), reviewerAgent: Type.Optional(Type.String({ description: "GSD Verify/Ship agent override." })),
   id: Type.Optional(Type.String({})), name: Type.Optional(Type.String({})), systemPrompt: Type.Optional(Type.String({})),
   skills: Type.Optional(Type.String({ description: "Comma-separated skill names." })),
   extensions: Type.Optional(Type.String({ description: "Comma-separated extension refs." })),
