@@ -138,6 +138,25 @@ export function buildCompletedState(
   };
 }
 
+export function initLiveWidget(pi: any): void {
+  let widgetRegistered = false;
+
+  pi.events.on("subagent:created", (data: any) => {
+    updateLiveState({ agents: [buildRunningState(data.agent, data.task, data.model, data.timestamp)] });
+  });
+  pi.events.on("subagent:completed", () => updateLiveState({ agents: [] }));
+  pi.events.on("subagent:failed", (data: any) => {
+    updateLiveState({ agents: [buildFailedState(data.agent, data.task, data.model, data.errorMessage || "failed")] });
+  });
+
+  pi.on("context", (_event: any, ctx: any) => {
+    if (!widgetRegistered && ctx?.setWidget) {
+      ctx.setWidget("subagent-live", (tui: any, theme: any) => createLiveWidget(tui, theme), { placement: "aboveEditor" });
+      widgetRegistered = true;
+    }
+  });
+}
+
 export function buildFailedState(
   agent: string,
   task: string,
