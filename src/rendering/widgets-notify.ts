@@ -4,7 +4,8 @@
 import { Container, Text } from "@mariozechner/pi-tui";
 import type { RunStatus } from "../runs/types.ts";
 import { icon, progressBar, statusColor } from "./widgets-shared.ts";
-import { renderGoalWidget, renderWorkflowWidget } from "./widgets.ts";
+import { renderWorkflowWidget } from "./widgets.ts";
+import { renderGoalWidget } from "./widgets-goal.ts";
 
 export interface NotificationData {
   runId: string;
