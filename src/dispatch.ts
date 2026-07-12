@@ -13,6 +13,7 @@ import { runWorkflow } from "./engine/workflow-runner.ts";
 import { getResultSummaryText } from "./execution/progress.js";
 import { listWorkflows } from "./workflows/persistence.ts";
 import { emptyUsage, isResultError } from "./execution/result-utils.ts";
+import { runGSDCycle } from "./engine/gsd-runner.ts";
 import { runSubagent } from "./execution/runner.ts";
 import type { SubagentDetails, SubagentResult } from "./execution/types.ts";
 import { resolveSettings } from "./settings/settings.ts";
@@ -49,6 +50,7 @@ export async function dispatchAction(
   if (a === "run") return handleRun(params, cwd, signal, onUpdate);
   if (a === "run-workflow") return handleWorkflowRun(params, cwd, signal);
   if (a === "run-goal") return handleGoalRun(params, cwd, signal);
+  if (a === "gsd") return handleGSD(params, cwd, signal);
   if (a === "steer") return handleSteer(params, cwd);
 
   // ─── CRUD ─────────────────────────────────────────────
@@ -152,6 +154,20 @@ function handleSteer(params: any, cwd: string): ToolResult {
   const r = steerSubagent(cwd, params.agent!, params.task!, params.name || "manual steer");
   if (!r) return { content: [{ type: "text", text: `No active subagent "${params.agent}" found. Active: ${listActive(cwd).map((a: any) => a.agent).join(", ") || "(none)"}` }], details: {} };
   return { content: [{ type: "text", text: `Steered "${params.agent}": ${r.reason}\nNew task: ${r.newTask.slice(0, 200)}` }], details: { steered: r } };
+}
+
+// ─── GSD Cycle ────────────────────────────────────────────
+
+async function handleGSD(params: any, cwd: string, signal: any): Promise<ToolResult> {
+  if (!params.task) return err("action=gsd requires task (feature description).");
+  const settings = resolveSettings(cwd);
+  const run = await runGSDCycle({ cwd, feature: params.task!, settings, signal, dryRun: params.dryRun });
+
+  const lines = [`GSD Cycle: ${run.feature.slice(0, 80)}`, `Status: ${run.status}`, `Cost: $${run.totalCost.toFixed(4)}`, "", "Phases:"];
+  for (const p of run.phases) {
+    lines.push(`  ${p.status === "completed" ? "\u2713" : "\u00d7"} ${p.name} (${p.agent}): ${p.response.slice(0, 120)}`);
+  }
+  return { content: [{ type: "text", text: lines.filter(Boolean).join("\n") }], details: { gsd: run } };
 }
 
 // ─── Helpers ───────────────────────────────────────────────

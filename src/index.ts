@@ -7,7 +7,7 @@ import { renderCompletionNotification } from "./rendering/widgets-notify.ts";
 import { initLiveWidget } from "./rendering/live-widget.ts";
 
 const Params = Type.Object({
-  action: Type.String({ description: "run | run-workflow | run-goal | steer | workflows | workflow-create | workflow-update | workflow-delete | teams | team-create | team-update | team-delete | agents | agent-create | agent-update | agent-delete | runs | run-status | run-abort" }),
+  action: Type.String({ description: "run | run-workflow | run-goal | gsd | steer | workflows | workflow-create | workflow-update | workflow-delete | teams | team-create | team-update | team-delete | agents | agent-create | agent-update | agent-delete | runs | run-status | run-abort" }),
   agent: Type.Optional(Type.String({ description: "Agent name or 'auto' for policy-driven selection." })),
   task: Type.Optional(Type.String({ description: "Prompt / task for the agent." })),
   description: Type.Optional(Type.String({ description: "Short 3-5 word summary shown in UI." })),
