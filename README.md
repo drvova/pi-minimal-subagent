@@ -26,10 +26,29 @@ Unified subagent tool for Pi — run agents, workflows, goal loops with live TUI
 | `agents` / `agent-create` / `agent-update` / `agent-delete` | CRUD agent definitions |
 | `runs` / `run-status` / `run-abort` | Check run status, abort running workflows |
 
+## Parameters
+
+| Param | Actions | Meaning |
+|-------|---------|---------|
+| `agent` | run, steer | Agent name, or `auto` for policy/description routing |
+| `task` | run, gsd, steer | Prompt / feature description |
+| `model` `thinking` `skills` `extensions` | run | Fill fields the agent frontmatter leaves unspecified |
+| `resume` | run | Prior run ID — prepends its output as context |
+| `inherit_context` | run | Fork the parent conversation into the agent |
+| `run_in_background` (`background`) | run-workflow | Return a run ID immediately, don't block |
+| `wait` | run-status | Poll up to 120s until the run reaches a terminal status |
+| `verbose` | run-status | Include full phase/task breakdown |
+| `dryRun` | run-workflow, gsd, run-goal | Scaffold phases without spawning real Pi processes |
+| `workerAgent` `judgeAgent` `maxTurns` `budget` | run-goal | Loop worker, judge, turn cap (0 = unlimited), cost cap |
+| `plannerAgent` `executorAgent` `reviewerAgent` | gsd | Override phase agents (else resolved by name convention) |
+
+Abort kills running child processes; orphaned `running` records (owner process died) reconcile to `failed` on the next status check.
+
 ## Features
 
 - Single agent execution, workflow orchestration, goal loops
-- Autonomous delegation with policy-driven agent routing
+- Zero-config `auto` agent — routes by description match, no settings required
+- Autonomous delegation with optional policy-driven agent routing
 - Mid-run steering — redirect running agents without restart
 - Durable state — persisted to `.pi/subagent-state/`
 - Background runs with styled completion notifications
@@ -78,6 +97,8 @@ Global: `~/.pi/agent/settings.json`. Project: `.pi/settings.json` (overrides glo
 
 **Environment variables**: The `environment` map overrides or adds variables to the subagent process environment. The parent process environment is inherited, and configured values take precedence. Global and project `environment` settings merge by key, with project values winning.
 
+**Delegation is optional.** `agent: "auto"` works with no settings — it scores discovered agents by task-token overlap with their name and description. A `delegation` policy only adds explicit keyword routing and complexity thresholds on top.
+
 ## GSD — Structured Software Delivery
 
 Native GSD five-phase methodology via `action=gsd`:
@@ -92,7 +113,7 @@ Each phase spawns a fresh-context subagent. Previous phase output feeds into the
 { "action": "gsd", "task": "Add dark mode to the dashboard", "dryRun": true }
 ```
 
-GSD agents should be defined in `.pi/agents/`:
+GSD agents resolve by name convention (`gsd-planner`, `gsd-executor`, `gsd-reviewer`) or fall back to the first discovered agent. Override per phase with `plannerAgent` / `executorAgent` / `reviewerAgent`:
 - `gsd-planner` — Discuss + Plan
 - `gsd-executor` — Execute
 - `gsd-reviewer` — Verify + Ship
