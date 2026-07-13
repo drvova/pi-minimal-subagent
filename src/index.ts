@@ -9,12 +9,25 @@ import { renderGSDWidget } from "./rendering/widgets-gsd.ts";
 import { renderCompletionNotification } from "./rendering/widgets-notify.ts";
 import { initLiveWidget } from "./rendering/live-widget.ts";
 
-// Tiny local Type helper — replaces @sinclair/typebox dependency
+// Tiny local Type helper — emits valid JSON Schema (replaces @sinclair/typebox).
+// Optionality is expressed via the object-level `required` array, never an
+// inline `optional` key, which strict providers reject.
+const OPT = Symbol("optional");
 function T_String(opts?: { description?: string }) { return { type: "string", ...opts } as any; }
 function T_Number(opts?: { description?: string }) { return { type: "number", ...opts } as any; }
 function T_Boolean(opts?: { description?: string }) { return { type: "boolean", ...opts } as any; }
-function T_Optional(t: any) { return { ...t, optional: true } as any; }
-const Type = { Object: (p: any) => p, String: T_String, Optional: T_Optional, Number: T_Number, Boolean: T_Boolean } as any;
+function T_Optional(t: any) { return { ...t, [OPT]: true } as any; }
+function T_ObjectBuilder(props: Record<string, any>) {
+  const properties: Record<string, any> = {};
+  const required: string[] = [];
+  for (const [key, schema] of Object.entries(props)) {
+    const { [OPT]: optional, ...clean } = schema;
+    properties[key] = clean;
+    if (!optional) required.push(key);
+  }
+  return { type: "object", properties, required } as any;
+}
+const Type = { Object: T_ObjectBuilder, String: T_String, Optional: T_Optional, Number: T_Number, Boolean: T_Boolean } as any;
 
 const Params = Type.Object({
   action: Type.String({ description: "gsd | run | run-workflow | run-goal | steer | workflows | workflow-create | workflow-update | workflow-delete | teams | team-create | team-update | team-delete | agents | agent-create | agent-update | agent-delete | runs | run-status | run-abort" }),
