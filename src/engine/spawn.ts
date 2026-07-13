@@ -5,6 +5,7 @@ import { bunSpawnTask, isBun } from "../execution/bun-spawn.ts";
 import { resolvePiSpawn } from "../execution/runner-helpers.ts";
 import { buildArgsForTask } from "./spawn-args.ts";
 import { parsePiStdout } from "./spawn-parse.ts";
+import { createIdleWatchdog } from "./spawn-watchdog.ts";
 
 export { now, buildChildArgs, buildArgsForTask } from "./spawn-args.ts";
 export { spawnPiTask } from "./spawn-task.ts";
@@ -29,17 +30,19 @@ export function spawnForTask(
       cwd, shell: false, stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env, ...(settings.environment ?? {}) },
     });
+    const watchdog = createIdleWatchdog(() => { try { proc.kill("SIGKILL"); } catch { /* already dead */ } });
     const onAbort = () => { try { proc.kill("SIGTERM"); } catch { /* already dead */ } };
     signal?.addEventListener("abort", onAbort, { once: true });
     proc.stdin.end();
     let stdout = "";
-    proc.stdout.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
-    proc.stderr.on("data", () => {});
+    proc.stdout.on("data", (chunk: Buffer) => { stdout += chunk.toString(); watchdog.reset(); });
+    proc.stderr.on("data", () => { watchdog.reset(); });
     proc.on("close", () => {
+      watchdog.clear();
       signal?.removeEventListener("abort", onAbort);
       const { response, usage } = parsePiStdout(stdout);
       resolve({ response, usage: usage ?? { input: 0, output: 0, cost: 0 } });
     });
-    proc.on("error", () => resolve({ response: "", usage: { input: 0, output: 0, cost: 0 } }));
+    proc.on("error", () => { watchdog.clear(); resolve({ response: "", usage: { input: 0, output: 0, cost: 0 } }); });
   });
 }
