@@ -1,0 +1,8 @@
+{"timestamp":"2026-07-13T02:21:03.942Z","type":"run_started","runId":"run-mrililhh-52crog","message":"Workflow \"Probe Flow\" started (1 phases)"}
+{"timestamp":"2026-07-13T02:21:03.942Z","type":"phase_started","runId":"run-mrililhh-52crog","phaseId":"p1","message":"Phase \"Phase 1\" started with 2 tasks"}
+{"timestamp":"2026-07-13T02:21:03.942Z","type":"task_started","runId":"run-mrililhh-52crog","phaseId":"p1","taskId":"t1"}
+{"timestamp":"2026-07-13T02:21:03.945Z","type":"task_started","runId":"run-mrililhh-52crog","phaseId":"p1","taskId":"t2"}
+{"timestamp":"2026-07-13T02:21:56.414Z","type":"task_completed","runId":"run-mrililhh-52crog","phaseId":"p1","taskId":"t1","message":"Need clarity: **what is \"check A\"?**\n\n- A test file or checkpoint label?\n- An artifact from a recent run (`.pi/subagent-state/runs/`)?\n- A section of the README or CODE_QUALITY_REVIEW?\n- Something els"}
+{"timestamp":"2026-07-13T02:30:33.253Z","type":"task_failed","runId":"run-mrililhh-52crog","phaseId":"p1","taskId":"t2"}
+{"timestamp":"2026-07-13T02:30:33.254Z","type":"phase_failed","runId":"run-mrililhh-52crog","phaseId":"p1","message":"Phase \"Phase 1\" failed"}
+{"timestamp":"2026-07-13T02:30:33.254Z","type":"run_failed","runId":"run-mrililhh-52crog","message":"Phase \"Phase 1\" failed"}

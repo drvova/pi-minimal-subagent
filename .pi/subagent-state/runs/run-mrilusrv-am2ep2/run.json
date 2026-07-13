@@ -1,0 +1,92 @@
+{
+  "id": "run-mrilusrv-am2ep2",
+  "workflowId": "wf-mri53tgo-sofc95",
+  "workflowName": "Stress Chain",
+  "status": "failed",
+  "pid": 13811,
+  "phaseResults": [
+    {
+      "phaseId": "p1",
+      "phaseName": "Recon",
+      "status": "completed",
+      "startedAt": "2026-07-13T02:30:33.260Z",
+      "taskResults": [
+        {
+          "taskId": "t1",
+          "agent": "scout",
+          "task": "Reply exactly CHAIN-1A",
+          "status": "completed",
+          "startedAt": "2026-07-13T02:30:33.260Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-13T02:31:01.611Z",
+          "response": "CHAIN-1A",
+          "usage": {
+            "input": 10,
+            "output": 98,
+            "cost": 0.0761225,
+            "turns": 1
+          }
+        },
+        {
+          "taskId": "t2",
+          "agent": "scout",
+          "task": "Reply exactly CHAIN-1B",
+          "status": "completed",
+          "startedAt": "2026-07-13T02:30:33.265Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-13T02:31:00.961Z",
+          "response": "CHAIN-1B",
+          "usage": {
+            "input": 10,
+            "output": 99,
+            "cost": 0.07579875000000001,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-13T02:31:01.612Z"
+    },
+    {
+      "phaseId": "p2",
+      "phaseName": "Middle",
+      "status": "completed",
+      "startedAt": "2026-07-13T02:31:01.612Z",
+      "taskResults": [
+        {
+          "taskId": "t3",
+          "agent": "auto",
+          "task": "Reconnaissance: reply exactly CHAIN-2",
+          "status": "completed",
+          "startedAt": "2026-07-13T02:31:01.612Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-13T02:31:21.555Z",
+          "response": "CHAIN-2",
+          "usage": {
+            "input": 10,
+            "output": 104,
+            "cost": 0.076155,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-13T02:31:21.556Z"
+    },
+    {
+      "phaseId": "p3",
+      "phaseName": "Final",
+      "status": "pending",
+      "startedAt": "2026-07-13T02:30:33.259Z",
+      "taskResults": [
+        {
+          "taskId": "t4",
+          "agent": "scout",
+          "task": "Reply exactly CHAIN-3",
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+  "startedAt": "2026-07-13T02:30:33.259Z",
+  "error": "orphaned: owner process exited before completion",
+  "completedAt": "2026-07-13T02:35:27.754Z"
+}

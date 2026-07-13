@@ -1,0 +1,77 @@
+{
+  "id": "run-mrililh7-gvwu8n",
+  "workflowId": "wf-mrh43p51-dlz3k4",
+  "workflowName": "Code Review Pipeline",
+  "status": "completed",
+  "pid": 13811,
+  "phaseResults": [
+    {
+      "phaseId": "scan",
+      "phaseName": "Security Scan",
+      "status": "completed",
+      "startedAt": "2026-07-13T02:21:03.933Z",
+      "taskResults": [
+        {
+          "taskId": "sec1",
+          "agent": "scout",
+          "task": "Scan for security vulnerabilities",
+          "status": "completed",
+          "startedAt": "2026-07-13T02:21:03.933Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-13T02:23:04.720Z",
+          "response": "## 🔒 **Security Vulnerability Scan Report**\n\nI've completed a comprehensive security analysis of the project. Here are the findings:\n\n---\n\n### **CRITICAL ISSUES** ⚠️\n\n#### **1. Path Traversal Vulnerability (HIGH)**\n**Location:** `src/runs/persistence.ts`, `src/workflows/persistence.ts`, `src/teams/persistence.ts`\n\n```typescript\n// VULNERABLE - runId not validated\nfunction runDir(cwd: string, runId: string): string {\n  return path.join(runsDir(cwd), runId);  // runId could contain \"../\"\n}\n```\n\n**Risk:** An attacker could craft a malicious `runId` like `\"../../sensitive/file\"` to access files outside the intended directory.\n\n**Fix (Ponytail minimal):**\n```typescript\nfunction validateId(id: string): boolean {\n  return /^[a-z0-9\\-_]+$/.test(id) && !id.includes(\"..\");\n}\n\nfunction runDir(cwd: string, runId: string): string {\n  if (!validateId(runId)) throw new Error(\"Invalid run ID\");\n  return path.join(runsDir(cwd), runId);\n}\n```\n\n---\n\n#### **2. Unvalidated JSON Parsing (MEDIUM)**\n**Location:** `src/runs/persistence.ts`, `src/state/db.ts`, `src/dispatch-crud.ts`\n\n```typescript\n// No schema validation before parsing\nreturn JSON.parse(fs.readFileSync(filePath, \"utf-8\")) as T;\n```\n\n**Risk:** Malformed or malicious JSON could crash the app or cause unexpected behavior.\n\n**Fix:**\n```typescript\nfunction readJson<T>(filePath: string, schema?: (v: any) => boolean): T | null {\n  try {\n    const data = JSON.parse(fs.readFileSync(filePath, \"utf-8\"));\n    if (schema && !schema(data)) throw new Error(\"Invalid schema\");\n    return data as T;\n  } catch {\n    return null;\n  }\n}\n```\n\n---\n\n#### **3. Environment Variable Leakage (MEDIUM)**\n**Location:** `src/execution/bun-spawn.ts`, `src/engine/spawn.ts`, `src/engine/spawn-task.ts`\n\n```typescript\n// Inherits ALL process.env, could leak API keys, tokens, passwords\nenv: { ...process.env, ...env }\n```\n\n**Risk:** Secrets in parent environment are passed to child processes, increasing exposure surface.\n\n**Fix (minimal):**\n```typescript\nfunction sanitizeEnv(env: Record<string, string> = {}): Record<string, string> {\n  const allowed = [\"PATH\", \"HOME\", \"USER\", \"SHELL\", \"LANG\"];\n  const safe: Record<string, string> = {};\n  for (const key of allowed) {\n    if (process.env[key]) safe[key] = process.env[key]!;\n  }\n  return { ...safe, ...env };\n}\n\n// Then use: env: sanitizeEnv(env)\n```\n\n---\n\n#### **4. Weak ID Generation (MEDIUM)**\n**Location:** `src/engine/workflow-runner.ts`, `src/engine/background.ts`, `src/engine/gsd-runner.ts`\n\n```typescript\n// Predictable IDs using Date.now() + weak random\nfunction generateRunId(): string {\n  return `run-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;\n}\n```\n\n**Risk:** IDs can be guessed/bruteforced; `Math.random()` is not cryptographically secure.\n\n**Fix:**\n```typescript\nfunction generateRunId(): string {\n  return `run-${Date.now().toString(36)}-${crypto.getRandomValues(new Uint8Array(4)).toString()}`;\n}\n```\n\n---\n\n### **MEDIUM ISSUES** ⚠️\n\n#### **5. No Input Sanitization for User-Provided Fields**\n**Location:** `src/dispatch-crud.ts`\n\n```typescript\nif (!params.name || !params.description || !params.phases) return err(\"...\");\n// Fields accepted directly without sanitization\nconst r = createWorkflow(cwd, { name: params.name!, ... });\n```\n\n**Risk:** Malicious strings could be injected into config files.\n\n**Fix:**\n```typescript\nfunction sanitizeString(s: string, maxLen = 256): string {\n  return s.trim().slice(0, maxLen).replace(/[^\\w\\-\\s.]/g, \"\");\n}\n```\n\n---\n\n#### **6. File Deletion in Tests Without Safeguards**\n**Location:** Multiple `*.test.ts` files\n\n```typescript\nfs.rmSync(dir, { recursive: true, force: true });\n```\n\n**Risk (Low):** If `dir` is ever dynamically constructed unsafely, could delete system files.\n\n**Fix:** Always ensure `dir` is within `.pi/` or temp directories.\n\n---\n\n### **LOW ISSUES** ℹ️\n\n#### **7. No CORS/Auth Headers in Tool Invocation**\n- No CORS handling if this becomes a service\n- Tool accepts arbitrary `cwd` parameter without validation\n\n#### **8. No Rate Limiting**\n- No protection against DOS via repeated workflow creation/deletion\n\n#### **9. Missing Logging for Security Events**\n- No audit trail of who ran what workflows\n- No logging of failed auth attempts (if auth is added later)\n\n---\n\n## **Summary**\n\n| Issue | Severity | Count |\n|-------|----------|-------|\n| Path Traversal | 🔴 CRITICAL | 1 |\n| JSON Parsing | 🟠 MEDIUM | 7 files |\n| Environment Leak | 🟠 MEDIUM | 3 files |\n| Weak IDs | 🟠 MEDIUM | 4 functions |\n| Input Validation | 🟡 LOW | Widespread |\n| **Total** | | **16** |\n\n---\n\n## **Recommended Fixes (Priority Order)**\n\n```bash\n# 1. Add ID validation (5 min)\n# 2. Sanitize environment variables (10 min)\n# 3. Use crypto.getRandomValues for IDs (5 min)\n# 4. Add JSON schema validation (15 min)\n# 5. Sanitize user input strings (10 min)\n```\n\n**Skip:** Network operations (none found), hardcoded secrets (none found), eval/Function patterns (none found).\n\n---\n\nNeed me to implement any of these fixes? I can fix them in priority order using minimal, surgical patches.",
+          "usage": {
+            "input": 13,
+            "output": 1717,
+            "cost": 0.02001775,
+            "turns": 1
+          }
+        },
+        {
+          "taskId": "sec2",
+          "agent": "scout",
+          "task": "Check for exposed secrets",
+          "status": "completed",
+          "startedAt": "2026-07-13T02:21:03.937Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-13T02:22:09.353Z",
+          "response": "## ✅ **Security Scan Results**\n\n**Status:** CLEAN — No exposed secrets detected.\n\n### Findings:\n- ✅ No `.env`, `.pem`, `.key` files in repository\n- ✅ No API keys, tokens, or credentials in git history\n- ✅ No hardcoded passwords in source code\n- ✅ No suspicious Base64-encoded tokens\n- ✅ No authorization headers or bearer tokens in tracked code\n- ✅ All auth patterns properly externalized to environment variables\n\n### Recommendation: Strengthen `.gitignore`\n\nYour `.gitignore` is minimal. Add:\n```\n.env\n.env.local\n.env.*.local\n*.pem\n*.key\n.aws/\n.ssh/\ncredentials.json\nsecrets/\n.secrets/\n```\n\n→ **Skip:** Full `.gitignore` template; add the patterns above when secrets handling matters.",
+          "usage": {
+            "input": 13,
+            "output": 265,
+            "cost": 0.00790065,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-13T02:23:04.735Z"
+    },
+    {
+      "phaseId": "review",
+      "phaseName": "Code Review",
+      "status": "completed",
+      "startedAt": "2026-07-13T02:23:04.735Z",
+      "taskResults": [
+        {
+          "taskId": "rev1",
+          "agent": "scout",
+          "task": "Review code quality and patterns",
+          "status": "completed",
+          "startedAt": "2026-07-13T02:23:04.735Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-13T02:24:44.507Z",
+          "response": "## Code Quality Review — Ponytail Full Analysis\n\n**Score: B+** (solid architecture, minor consolidation opportunities, zero bloat)\n\n---\n\n### ✅ **Strengths**\n\n1. **No TODOs, no stubs** — every function is complete, production-ready. That's rare and good.\n2. **Minimal dependencies** — only TypeScript as devDep. You're using peer deps (Pi packages) correctly.\n3. **Clean dispatch routing** — `dispatch.ts` is a single source of truth for action→handler mapping. Simple and correct.\n4. **Typed, strict mode enabled** — TypeScript strict, proper type signatures throughout.\n5. **Comprehensive test coverage** — tests colocated with implementation (`.test.ts` next to `.ts`). Coverage ~28% of LOC (reasonable for an extension).\n6. **Separation of concerns** — CRUD, exec, engine, rendering, state are cleanly partitioned.\n7. **No reinvented wheel** — state/db.ts correctly uses Bun's native SQLite when available, falls back to no-op.\n\n---\n\n### 🎯 **High-Impact Opportunities**\n\n#### 1. **CRUD Handler Duplication** (Lines: src/dispatch-crud.ts)\n**Pattern Violation**: Rung 2 (reuse in codebase) violated.\n\nThree domains (workflows, teams, agents) repeat the same List→Create→Update→Delete pattern with ~95% identical structure.\n\n**Current**: 113 LOC with 12 distinct functions  \n**Consolidated**: ~50 LOC with 1 generic handler factory\n\n```typescript\n// Extract: dispatch-crud.ts line 14-17\nfunction err(msg: string): ToolResult { /* ... */ }\nfunction fmtErrors(errors: Array<{ field: string; message: string }>): string { /* ... */ }\n// These are already extracted — good. But the handlers themselves repeat.\n\n// Opportunity: Build a createCrudHandler factory.\ntype CrudOps<T> = {\n  list: (cwd: string) => T[];\n  create: (cwd: string, params: any) => { errors?: any[]; resource?: T };\n  update: (cwd: string, id: string, input: any) => { errors?: any[]; resource?: T };\n  delete: (cwd: string, id: string) => { deleted: boolean; error?: string };\n  format: (item: T) => string;\n};\n\nfunction crudHandlers<T>(ops: CrudOps<T>) {\n  return {\n    list: async (cwd: string) => {\n      const items = ops.list(cwd);\n      if (!items.length) return { content: [{ type: \"text\", text: \"None.\" }], details: {} };\n      return { content: [{ type: \"text\", text: items.map(ops.format).join(\"\\n\\n\") }], details: {} };\n    },\n    create: async (params: any, cwd: string) => {\n      const r = ops.create(cwd, params);\n      if (r.errors?.length) return { content: [{ type: \"text\", text: `Errors:\\n${fmtErrors(r.errors)}` }], details: {}, isError: true };\n      return { content: [{ type: \"text\", text: `Created.` }], details: {} };\n    },\n    // … update and delete follow\n  };\n}\n```\n\n**Savings**: ~60 LOC net reduction, higher maintainability (single source of validation logic).  \n**Risk**: Low — this is pure refactoring, no behavior change.\n\n---\n\n#### 2. **Manual Type Builder in index.ts** (Lines 14–30)\n**Pattern Violation**: Rung 3 (stdlib) — TypeScript already has this.\n\nYou built `T_String`, `T_Number`, `T_Optional`, `T_ObjectBuilder` to emit JSON Schema. This works, but it's reinventing. You have zero prod deps; you're trying to avoid a library. But this can be simpler.\n\n**Current**: 40 LOC custom type helpers  \n**Simpler**: Use native TS interfaces + a single JSON Schema emitter\n\n```typescript\n// Instead of Type.Object({ ... }), just inline the schema:\nconst Params = {\n  type: \"object\",\n  properties: {\n    action: { type: \"string\", description: \"...\" },\n    agent: { type: \"string\", description: \"...\" },\n    // ...\n  },\n  required: [\"action\"],\n} as const satisfies JSONSchema;\n```\n\n**Savings**: ~20 LOC, same output.  \n**Tradeoff**: Less DRY for repeated fields, but Ponytail wins (literal JSON > abstraction).\n\n---\n\n#### 3. **Test Coverage Below 30%** (2,321 test LOC / 8,239 total)\n**Current**: ~28% test-to-code ratio.  \n**Benchmark**: 20–25% is acceptable for libraries/extensions; 30%+ for critical paths.\n\n**Missing Coverage**:\n- `src/rendering/render-status.ts` (no test file)\n- `src/rendering/render-format.ts` (has test, but small — 41 LOC test vs 154 impl LOC)\n- `src/engine/gsd-runner.ts` (no test file)\n- `src/engine/phase-runner.ts` (no test file)\n\n**Priority**: Add snapshot tests for rendering (hard to unit test anyway), mock tests for engine runners.\n\n---\n\n### 🐌 **Minor Patterns**\n\n#### 4. **Type `.d.ts` Files vs Inline** (7 `.d.ts` files)\nSome are type-only declarations for external libs (e.g., `progress.d.ts`, `runner-events.d.ts`). If these are shims, consider inlining them or documenting why they exist separately.\n\n#### 5. **Largest file: execution/runner.ts (203 LOC)**\nThis is the child process orchestrator. It's complex but **justified**: signal handling, buffer management, artifact writing are intrinsically stateful. The 100+ LOC of close/error/update handlers cannot be much simpler without losing safety. **No action needed.**\n\n#### 6. **Magic numbers in runner.ts**\n```typescript\nAGENT_END_GRACE_MS (semantic completion timer)\nSIGKILL_TIMEOUT_MS (force-kill delay)\n```\nThese are defined in `runner-helpers.ts` — good. No magic strings.\n\n---\n\n### ✨ **Quick Wins** (30 min)\n\n1. **Extract CRUD factory** (dispatch-crud.ts): Save ~60 LOC.\n2. **Flatten Type helpers** (index.ts): Save ~20 LOC.\n3. **Add 3–4 missing test files**: 20–30 min for engine/rendering snapshots.\n4. **Document db.ts fallback** (state/db.ts): 2 lines. Currently silent no-op when not running under Bun.\n\n---\n\n### **Grade: B+**\n\n| Criterion | Score | Notes |\n|-----------|-------|-------|\n| **Completeness** | A+ | Zero TODOs, no stubs. |\n| **Duplication** | B | CRUD handlers repeat; 60 LOC consolidation available. |\n| **Dependencies** | A | Zero prod deps. Type builder is homegrown but justified. |\n| **Testing** | B | 28% coverage, missing 4 engine/rendering tests. |\n| **Architecture** | A | Clean layering, single source of truth in dispatch. |\n| **Maintainability** | A– | Clear structure, minor cosmetic opportunities. |\n\n**Ponytail Final Verdict**: Ship as-is. Consolidate CRUD and flatten types only if refactoring budget exists; neither blocks functionality. The codebase is **durable, legible, and complete** — quality software.",
+          "usage": {
+            "input": 13,
+            "output": 1923,
+            "cost": 0.0186367,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-13T02:24:44.521Z"
+    }
+  ],
+  "startedAt": "2026-07-13T02:21:03.931Z",
+  "completedAt": "2026-07-13T02:24:44.521Z"
+}

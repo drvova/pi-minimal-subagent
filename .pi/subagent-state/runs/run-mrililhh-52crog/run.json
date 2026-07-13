@@ -1,0 +1,53 @@
+{
+  "id": "run-mrililhh-52crog",
+  "workflowId": "wf-mri1czly-46z8ay",
+  "workflowName": "Probe Flow",
+  "status": "failed",
+  "pid": 13811,
+  "phaseResults": [
+    {
+      "phaseId": "p1",
+      "phaseName": "Phase 1",
+      "status": "failed",
+      "startedAt": "2026-07-13T02:21:03.942Z",
+      "taskResults": [
+        {
+          "taskId": "t1",
+          "agent": "scout",
+          "task": "check A",
+          "status": "completed",
+          "startedAt": "2026-07-13T02:21:03.942Z",
+          "exitCode": 0,
+          "completedAt": "2026-07-13T02:21:56.413Z",
+          "response": "Need clarity: **what is \"check A\"?**\n\n- A test file or checkpoint label?\n- An artifact from a recent run (`.pi/subagent-state/runs/`)?\n- A section of the README or CODE_QUALITY_REVIEW?\n- Something else?\n\nQuick context: repo has 21 test files, recent stress-round5.mjs, clean git status. Help me target the right check.",
+          "usage": {
+            "input": 13,
+            "output": 162,
+            "cost": 0.00776545,
+            "turns": 1
+          }
+        },
+        {
+          "taskId": "t2",
+          "agent": "scout",
+          "task": "check B",
+          "status": "failed",
+          "startedAt": "2026-07-13T02:21:03.945Z",
+          "exitCode": 1,
+          "completedAt": "2026-07-13T02:30:33.252Z",
+          "response": "No obvious \"B\" in the directory. Do you mean:\n- **Build?** (`npm run build` / `npm test`)\n- **Branch B?** (git branch status)\n- **Checkpoint B?** (test/checkpoint file)\n- **Code quality B?** (review/lint)\n- A specific file?\n\nSay what, and I'll verify it.",
+          "usage": {
+            "input": 13,
+            "output": 176,
+            "cost": 0.0088327,
+            "turns": 1
+          }
+        }
+      ],
+      "completedAt": "2026-07-13T02:30:33.254Z"
+    }
+  ],
+  "startedAt": "2026-07-13T02:21:03.941Z",
+  "completedAt": "2026-07-13T02:30:33.254Z",
+  "error": "Phase \"Phase 1\" failed"
+}

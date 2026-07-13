@@ -1,0 +1,13 @@
+{"timestamp":"2026-07-13T02:30:33.260Z","type":"run_started","runId":"run-mrilusrv-am2ep2","message":"Workflow \"Stress Chain\" started (3 phases)"}
+{"timestamp":"2026-07-13T02:30:33.260Z","type":"phase_started","runId":"run-mrilusrv-am2ep2","phaseId":"p1","message":"Phase \"Recon\" started with 2 tasks"}
+{"timestamp":"2026-07-13T02:30:33.260Z","type":"task_started","runId":"run-mrilusrv-am2ep2","phaseId":"p1","taskId":"t1"}
+{"timestamp":"2026-07-13T02:30:33.265Z","type":"task_started","runId":"run-mrilusrv-am2ep2","phaseId":"p1","taskId":"t2"}
+{"timestamp":"2026-07-13T02:31:00.961Z","type":"task_completed","runId":"run-mrilusrv-am2ep2","phaseId":"p1","taskId":"t2","message":"CHAIN-1B"}
+{"timestamp":"2026-07-13T02:31:01.611Z","type":"task_completed","runId":"run-mrilusrv-am2ep2","phaseId":"p1","taskId":"t1","message":"CHAIN-1A"}
+{"timestamp":"2026-07-13T02:31:01.612Z","type":"phase_completed","runId":"run-mrilusrv-am2ep2","phaseId":"p1","message":"Phase \"Recon\" completed"}
+{"timestamp":"2026-07-13T02:31:01.612Z","type":"phase_started","runId":"run-mrilusrv-am2ep2","phaseId":"p2","message":"Phase \"Middle\" started with 1 tasks"}
+{"timestamp":"2026-07-13T02:31:01.612Z","type":"task_started","runId":"run-mrilusrv-am2ep2","phaseId":"p2","taskId":"t3"}
+{"timestamp":"2026-07-13T02:31:21.555Z","type":"task_completed","runId":"run-mrilusrv-am2ep2","phaseId":"p2","taskId":"t3","message":"CHAIN-2"}
+{"timestamp":"2026-07-13T02:31:21.556Z","type":"phase_completed","runId":"run-mrilusrv-am2ep2","phaseId":"p2","message":"Phase \"Middle\" completed"}
+{"timestamp":"2026-07-13T02:31:21.556Z","type":"phase_started","runId":"run-mrilusrv-am2ep2","phaseId":"p3","message":"Phase \"Final\" started with 1 tasks"}
+{"timestamp":"2026-07-13T02:31:21.556Z","type":"task_started","runId":"run-mrilusrv-am2ep2","phaseId":"p3","taskId":"t4"}
